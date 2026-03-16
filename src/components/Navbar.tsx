@@ -22,6 +22,14 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-3">
           {loading ? null : user ? (
             <>
+              <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-heading">
+                Pricing
+              </Link>
+              <Link to="/account">
+                <Button variant="ghost" size="sm" className="font-heading text-sm">
+                  Account
+                </Button>
+              </Link>
               {isPro ? (
                 <Badge className="text-[10px] uppercase tracking-wider bg-primary/15 text-primary border-primary/30">
                   ✦ Pro
@@ -34,11 +42,6 @@ const Navbar = () => {
                   </Button>
                 </Link>
               )}
-              <Link to="/account">
-                <Button variant="ghost" size="sm" className="font-heading text-sm">
-                  Account
-                </Button>
-              </Link>
               <Button
                 variant="ghost"
                 size="sm"
