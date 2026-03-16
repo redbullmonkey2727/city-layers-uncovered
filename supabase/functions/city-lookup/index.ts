@@ -72,7 +72,7 @@ Be specific, accurate, and fascinating. Avoid generic statements. Include real n
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Tell me everything about who built ${city} and what a first-time visitor should understand about what they're seeing. Be specific and use real facts.` },
