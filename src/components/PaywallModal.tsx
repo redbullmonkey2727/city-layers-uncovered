@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Lock, Zap } from "lucide-react";
+import { Lock, Zap, ExternalLink } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -15,6 +15,7 @@ const PaywallModal = ({ open, onClose }: Props) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -28,11 +29,16 @@ const PaywallModal = ({ open, onClose }: Props) => {
     }
     setLoading(true);
     setError(null);
+    setCheckoutUrl(null);
     try {
       const { data, error: fnError } = await supabase.functions.invoke("create-checkout");
       if (fnError) throw fnError;
       if (data?.url) {
-        window.open(data.url, "_blank");
+        const win = window.open(data.url, "_blank");
+        if (!win) {
+          setCheckoutUrl(data.url);
+          toast({ title: "Popup blocked", description: "Click the link below to continue to checkout." });
+        }
       } else {
         throw new Error("No checkout URL returned");
       }
@@ -55,14 +61,23 @@ const PaywallModal = ({ open, onClose }: Props) => {
         <p className="text-muted-foreground">
           You've used all 5 free city lookups this month. Upgrade to Pro for unlimited access.
         </p>
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
         <div className="space-y-3">
           <Button className="w-full font-heading gap-2" onClick={handleUpgrade} disabled={loading}>
             <Zap className="w-4 h-4" />
             {loading ? "Redirecting to checkout…" : "Upgrade to Pro — $9.99/mo"}
           </Button>
+          {checkoutUrl && (
+            <a
+              href={checkoutUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full text-sm text-primary hover:underline font-heading py-2"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Open Stripe Checkout
+            </a>
+          )}
           {error && (
             <Button variant="outline" className="w-full font-heading" onClick={handleUpgrade} disabled={loading}>
               Try Again
