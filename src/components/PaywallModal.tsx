@@ -14,6 +14,7 @@ interface Props {
 const PaywallModal = ({ open, onClose }: Props) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -26,12 +27,19 @@ const PaywallModal = ({ open, onClose }: Props) => {
       return;
     }
     setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout");
-      if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      const { data, error: fnError } = await supabase.functions.invoke("create-checkout");
+      if (fnError) throw fnError;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
     } catch (err) {
-      toast({ title: "Error", description: "Couldn't start checkout", variant: "destructive" });
+      const msg = err instanceof Error ? err.message : "Couldn't start checkout";
+      setError(msg);
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -47,11 +55,19 @@ const PaywallModal = ({ open, onClose }: Props) => {
         <p className="text-muted-foreground">
           You've used all 5 free city lookups this month. Upgrade to Pro for unlimited access.
         </p>
+        {error && (
+          <p className="text-sm text-destructive">{error}</p>
+        )}
         <div className="space-y-3">
           <Button className="w-full font-heading gap-2" onClick={handleUpgrade} disabled={loading}>
             <Zap className="w-4 h-4" />
-            {loading ? "Loading…" : "Upgrade to Pro — $9.99/mo"}
+            {loading ? "Redirecting to checkout…" : "Upgrade to Pro — $9.99/mo"}
           </Button>
+          {error && (
+            <Button variant="outline" className="w-full font-heading" onClick={handleUpgrade} disabled={loading}>
+              Try Again
+            </Button>
+          )}
           <Button variant="ghost" className="w-full text-muted-foreground" onClick={onClose}>
             Maybe later
           </Button>

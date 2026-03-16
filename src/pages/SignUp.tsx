@@ -4,20 +4,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2, CheckCircle2 } from "lucide-react";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 6) {
+      toast({ title: "Password too short", description: "Must be at least 6 characters", variant: "destructive" });
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -28,15 +33,21 @@ const SignUp = () => {
     setLoading(false);
     if (error) {
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
+    } else if (data.session) {
+      // Auto-confirmed — user is logged in immediately
+      toast({ title: "Account created! 🎉", description: "Welcome aboard." });
+      navigate("/");
     } else {
-      setSent(true);
+      // Email confirmation required
+      setSuccess(true);
     }
   };
 
-  if (sent) {
+  if (success) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-6 pt-14">
         <div className="text-center max-w-sm space-y-4">
+          <CheckCircle2 className="w-12 h-12 text-primary mx-auto" />
           <h1 className="text-3xl font-heading font-bold">Check Your Email</h1>
           <p className="text-muted-foreground">
             We sent a confirmation link to <strong className="text-foreground">{email}</strong>.
@@ -79,7 +90,14 @@ const SignUp = () => {
             minLength={6}
           />
           <Button type="submit" className="w-full font-heading" disabled={loading}>
-            {loading ? "Creating account…" : "Sign Up"}
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Creating account…
+              </>
+            ) : (
+              "Sign Up"
+            )}
           </Button>
         </form>
         <p className="text-center text-sm text-muted-foreground">

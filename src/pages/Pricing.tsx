@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Check } from "lucide-react";
+import { Check, Loader2, Shield } from "lucide-react";
 
 const plans = [
   {
@@ -14,7 +14,7 @@ const plans = [
     period: "/month",
     features: [
       "5 city lookups per month",
-      "1 saved trip",
+      "10 saved cities",
       "Basic summaries",
       "Search history",
     ],
@@ -42,8 +42,13 @@ const plans = [
 const Pricing = () => {
   const { user, subscription } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Handle checkout=cancelled redirect
+  const params = new URLSearchParams(window.location.search);
+  const cancelled = params.get("checkout") === "cancelled";
 
   const handleUpgrade = async () => {
     if (!user) {
@@ -51,16 +56,21 @@ const Pricing = () => {
       return;
     }
     setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout");
-      if (error) throw error;
+      const { data, error: fnError } = await supabase.functions.invoke("create-checkout");
+      if (fnError) throw fnError;
       if (data?.url) {
-        window.open(data.url, "_blank");
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
       }
     } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      setError(msg);
       toast({
         title: "Checkout failed",
-        description: err instanceof Error ? err.message : "Something went wrong",
+        description: msg,
         variant: "destructive",
       });
     } finally {
@@ -78,6 +88,11 @@ const Pricing = () => {
           <p className="text-muted-foreground text-lg max-w-lg mx-auto">
             Start free. Upgrade when you want unlimited access to every city on your road trip.
           </p>
+          {cancelled && (
+            <p className="text-sm text-muted-foreground mt-4 bg-muted/50 inline-block px-4 py-2 rounded-lg">
+              Checkout was cancelled. You can try again anytime.
+            </p>
+          )}
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -105,13 +120,25 @@ const Pricing = () => {
                   ))}
                 </ul>
                 {plan.plan === "pro" && !isCurrent ? (
-                  <Button
-                    className="w-full font-heading"
-                    onClick={handleUpgrade}
-                    disabled={loading}
-                  >
-                    {loading ? "Loading…" : plan.cta}
-                  </Button>
+                  <div className="space-y-3">
+                    <Button
+                      className="w-full font-heading"
+                      onClick={handleUpgrade}
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Redirecting…
+                        </>
+                      ) : (
+                        plan.cta
+                      )}
+                    </Button>
+                    {error && (
+                      <p className="text-xs text-destructive text-center">{error}</p>
+                    )}
+                  </div>
                 ) : isCurrent ? (
                   <Button variant="outline" className="w-full font-heading" disabled>
                     Current Plan
@@ -124,6 +151,14 @@ const Pricing = () => {
               </div>
             );
           })}
+        </div>
+
+        {/* Trust section */}
+        <div className="mt-12 text-center">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
+            <Shield className="w-4 h-4" />
+            <span>Secure payment via Stripe · Cancel anytime · No card stored on our servers</span>
+          </div>
         </div>
       </div>
     </div>
