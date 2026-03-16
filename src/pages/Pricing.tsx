@@ -187,6 +187,17 @@ const Pricing = () => {
                     </>
                   )}
                 </Button>
+                {checkoutUrl && (
+                  <a
+                    href={checkoutUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full text-sm text-primary hover:underline font-heading py-2"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Open Stripe Checkout
+                  </a>
+                )}
                 {error && (
                   <div className="space-y-2">
                     <p className="text-xs text-destructive text-center">{error}</p>
