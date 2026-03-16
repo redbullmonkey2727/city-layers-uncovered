@@ -1,4 +1,7 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "@/components/ui/badge";
 import CitySearch from "./CitySearch";
 
 interface Props {
@@ -6,8 +9,10 @@ interface Props {
   isLoading: boolean;
 }
 
-/** Full-screen hero with search bar front and center. */
 const HeroSection = ({ onSearch, isLoading }: Props) => {
+  const { user, subscription } = useAuth();
+  const isPro = subscription.plan === "pro";
+
   const layerVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: (i: number) => ({
@@ -80,17 +85,32 @@ const HeroSection = ({ onSearch, isLoading }: Props) => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.35, duration: 0.8 }}
         >
-          You're driving through a city you've never been to. Type its name below and discover who built it, why it's here, and what's really going on beneath the surface.
+          You're driving through a city you've never been to. Type its name and discover who built it, why it's here, and what's really going on beneath the surface.
         </motion.p>
 
         <CitySearch onSearch={onSearch} isLoading={isLoading} />
 
         <motion.div
-          className="mt-8 flex flex-col sm:flex-row gap-3 justify-center"
+          className="mt-8 flex flex-col items-center gap-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
         >
+          {!user ? (
+            <p className="text-sm text-muted-foreground">
+              5 free lookups · <Link to="/sign-up" className="text-primary hover:underline font-medium">Sign up</Link> to save your cities
+            </p>
+          ) : !isPro ? (
+            <Link to="/pricing">
+              <Badge className="cursor-pointer bg-primary/10 text-primary border-primary/20 hover:bg-primary/15 transition-colors font-heading text-xs">
+                ✦ Upgrade to Pro for unlimited access
+              </Badge>
+            </Link>
+          ) : (
+            <Badge className="bg-primary/10 text-primary border-primary/20 font-heading text-xs">
+              ✦ Pro — Unlimited lookups
+            </Badge>
+          )}
           <a
             href="#big-idea"
             className="text-sm text-muted-foreground hover:text-primary transition-colors font-heading"

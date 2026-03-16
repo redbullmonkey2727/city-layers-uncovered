@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Route, Search, CreditCard } from "lucide-react";
+import Footer from "@/components/Footer";
+import {
+  Loader2, MapPin, Search, CreditCard, Zap, Crown,
+  CheckCircle2, Lock, Infinity, BookmarkPlus, BarChart3, Headphones,
+} from "lucide-react";
 
 const FREE_LOOKUP_LIMIT = 5;
 
@@ -24,22 +28,22 @@ interface SavedCity {
   created_at: string;
 }
 
-interface Trip {
-  id: string;
-  title: string;
-  origin: string;
-  destination: string;
-  created_at: string;
-}
+const proFeatures = [
+  { icon: Infinity, label: "Unlimited city lookups" },
+  { icon: BookmarkPlus, label: "Unlimited saved cities" },
+  { icon: BarChart3, label: "Premium route insights" },
+  { icon: Headphones, label: "Audio mode (coming soon)" },
+];
 
 const Account = () => {
   const { user, profile, subscription, loading: authLoading, refreshProfile, refreshSubscription } = useAuth();
   const [searches, setSearches] = useState<SearchEvent[]>([]);
   const [savedCities, setSavedCities] = useState<SavedCity[]>([]);
-  const [trips, setTrips] = useState<Trip[]>([]);
   const [portalLoading, setPortalLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const isPro = subscription.plan === "pro";
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/sign-in");
@@ -47,7 +51,6 @@ const Account = () => {
 
   useEffect(() => {
     if (!user) return;
-    // Fetch recent searches
     supabase
       .from("search_events")
       .select("id, city_name, state_region, created_at")
@@ -56,24 +59,14 @@ const Account = () => {
       .limit(20)
       .then(({ data }) => { if (data) setSearches(data); });
 
-    // Fetch saved cities
     supabase
       .from("saved_cities")
       .select("id, city_name, state_region, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => { if (data) setSavedCities(data); });
-
-    // Fetch trips
-    supabase
-      .from("trips")
-      .select("id, title, origin, destination, created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => { if (data) setTrips(data); });
   }, [user]);
 
-  // Refresh subscription on mount (handles checkout redirect)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("checkout") === "success") {
@@ -90,7 +83,7 @@ const Account = () => {
       const { data, error } = await supabase.functions.invoke("customer-portal");
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
-    } catch (err) {
+    } catch {
       toast({ title: "Error", description: "Couldn't open billing portal", variant: "destructive" });
     } finally {
       setPortalLoading(false);
@@ -115,57 +108,145 @@ const Account = () => {
   const usagePercent = Math.min((profile.monthly_lookup_count / FREE_LOOKUP_LIMIT) * 100, 100);
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-16 px-6">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-background pt-20 pb-0">
+      <div className="max-w-4xl mx-auto px-6 space-y-8 pb-16">
+        {/* Header with greeting */}
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-heading font-bold">Account</h1>
-            <p className="text-muted-foreground mt-1">{profile.email}</p>
+            <h1 className="text-3xl md:text-4xl font-heading font-bold">
+              {isPro ? (
+                <>Welcome back, explorer <span className="text-gradient">✦</span></>
+              ) : (
+                "Your Account"
+              )}
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm">{profile.email}</p>
           </div>
           <Badge
-            variant={subscription.plan === "pro" ? "default" : "secondary"}
-            className="text-xs uppercase tracking-wider px-3 py-1"
+            className={`text-xs uppercase tracking-wider px-3 py-1.5 ${
+              isPro
+                ? "bg-primary/15 text-primary border-primary/30"
+                : "bg-muted text-muted-foreground"
+            }`}
           >
-            {subscription.plan === "pro" ? "Pro" : "Free"}
+            {isPro ? "✦ Pro" : "Free Plan"}
           </Badge>
         </div>
+
+        {/* Upgrade banner for free users */}
+        {!isPro && (
+          <Card className="glass-card border-primary/30 glow-primary overflow-hidden">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Crown className="w-5 h-5 text-primary" />
+                    <h3 className="font-heading font-bold text-lg">You're on the Free plan</h3>
+                  </div>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    You're limited to {FREE_LOOKUP_LIMIT} lookups/month and 10 saved cities. Unlock everything for just $9.99/mo.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 mb-5">
+                    {proFeatures.map(({ icon: Icon, label }) => (
+                      <div key={label} className="flex items-center gap-2 text-sm">
+                        <Icon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                        <span className="text-muted-foreground">{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Link to="/pricing">
+                    <Button className="font-heading gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25">
+                      <Zap className="w-4 h-4" />
+                      Upgrade to Pro — $9.99/mo
+                    </Button>
+                  </Link>
+                </div>
+                <div className="hidden md:flex flex-col items-center gap-1 text-center opacity-60">
+                  <Lock className="w-10 h-10 text-muted-foreground" />
+                  <span className="text-[11px] text-muted-foreground font-heading">Limited<br/>Access</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Pro celebration banner */}
+        {isPro && (
+          <Card className="glass-card border-primary/20 bg-primary/5">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-heading font-semibold text-sm">Pro membership active</h3>
+                <p className="text-muted-foreground text-xs">
+                  Unlimited lookups, unlimited saves, premium insights.
+                  {subscription.subscription_end && (
+                    <> {subscription.cancel_at_period_end ? "Expires" : "Renews"}{" "}
+                    {new Date(subscription.subscription_end).toLocaleDateString()}.</>
+                  )}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="font-heading flex-shrink-0"
+                onClick={handleManageBilling}
+                disabled={portalLoading}
+              >
+                {portalLoading ? "Loading…" : "Manage Billing"}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Plan & Usage */}
         <div className="grid md:grid-cols-2 gap-6">
           <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="text-lg font-heading flex items-center gap-2">
-                <CreditCard className="w-4 h-4" /> Plan & Billing
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-heading flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-primary" /> Plan & Billing
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <span className="text-sm text-muted-foreground">Current plan:</span>
-                <p className="text-lg font-heading font-semibold">
-                  {subscription.plan === "pro" ? "Pro — $9.99/mo" : "Free"}
-                </p>
+            <CardContent className="space-y-3">
+              <div className="flex items-baseline justify-between">
+                <span className="text-sm text-muted-foreground">Current plan</span>
+                <span className="font-heading font-semibold">
+                  {isPro ? "Pro — $9.99/mo" : "Free — $0"}
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <span className="text-sm text-muted-foreground">Status</span>
+                <span className={`text-sm font-medium ${isPro ? "text-primary" : "text-muted-foreground"}`}>
+                  {isPro ? "Active" : "No subscription"}
+                </span>
               </div>
               {subscription.subscription_end && (
-                <p className="text-xs text-muted-foreground">
-                  {subscription.cancel_at_period_end ? "Cancels" : "Renews"} on{" "}
-                  {new Date(subscription.subscription_end).toLocaleDateString()}
-                </p>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    {subscription.cancel_at_period_end ? "Expires" : "Next billing"}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {new Date(subscription.subscription_end).toLocaleDateString()}
+                  </span>
+                </div>
               )}
-              <div className="flex gap-2">
-                {subscription.plan === "pro" ? (
+              <div className="pt-2">
+                {isPro ? (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="font-heading"
+                    className="w-full font-heading"
                     onClick={handleManageBilling}
                     disabled={portalLoading}
                   >
-                    {portalLoading ? "Loading…" : "Manage Billing"}
+                    {portalLoading ? "Loading…" : "Manage Subscription"}
                   </Button>
                 ) : (
                   <Link to="/pricing">
-                    <Button size="sm" className="font-heading">Upgrade to Pro</Button>
+                    <Button size="sm" className="w-full font-heading gap-1.5">
+                      <Zap className="w-3.5 h-3.5" /> Upgrade to Pro
+                    </Button>
                   </Link>
                 )}
               </div>
@@ -173,14 +254,23 @@ const Account = () => {
           </Card>
 
           <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="text-lg font-heading flex items-center gap-2">
-                <Search className="w-4 h-4" /> Usage This Month
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-heading flex items-center gap-2">
+                <Search className="w-4 h-4 text-primary" /> Usage This Month
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {subscription.plan === "pro" ? (
-                <p className="text-muted-foreground text-sm">Unlimited lookups — you're on Pro.</p>
+              {isPro ? (
+                <div className="space-y-2">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-sm text-muted-foreground">Lookups used</span>
+                    <span className="font-heading font-semibold">{profile.monthly_lookup_count}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-primary">
+                    <Infinity className="w-3.5 h-3.5" />
+                    <span>Unlimited — you're on Pro</span>
+                  </div>
+                </div>
               ) : (
                 <>
                   <div className="flex justify-between text-sm">
@@ -189,16 +279,21 @@ const Account = () => {
                       {profile.monthly_lookup_count} / {FREE_LOOKUP_LIMIT}
                     </span>
                   </div>
-                  <div className="w-full bg-muted rounded-full h-2">
+                  <div className="w-full bg-muted rounded-full h-2.5">
                     <div
-                      className="bg-primary h-2 rounded-full transition-all"
+                      className={`h-2.5 rounded-full transition-all ${
+                        usagePercent >= 100 ? "bg-destructive" : "bg-primary"
+                      }`}
                       style={{ width: `${usagePercent}%` }}
                     />
                   </div>
-                  {profile.monthly_lookup_count >= FREE_LOOKUP_LIMIT && (
-                    <p className="text-xs text-destructive">
-                      Limit reached.{" "}
-                      <Link to="/pricing" className="underline">Upgrade</Link> for unlimited.
+                  {profile.monthly_lookup_count >= FREE_LOOKUP_LIMIT ? (
+                    <p className="text-xs text-destructive font-medium">
+                      Limit reached — <Link to="/pricing" className="underline">upgrade for unlimited</Link>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      {FREE_LOOKUP_LIMIT - profile.monthly_lookup_count} lookups remaining this month
                     </p>
                   )}
                 </>
@@ -209,18 +304,24 @@ const Account = () => {
 
         {/* Recent Searches */}
         <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="text-lg font-heading flex items-center gap-2">
-              <Search className="w-4 h-4" /> Recent Searches
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-heading flex items-center gap-2">
+              <Search className="w-4 h-4 text-primary" /> Recent Searches
             </CardTitle>
           </CardHeader>
           <CardContent>
             {searches.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No searches yet. Go explore a city!</p>
+              <div className="text-center py-6 space-y-2">
+                <MapPin className="w-8 h-8 text-muted-foreground/40 mx-auto" />
+                <p className="text-sm text-muted-foreground">No searches yet</p>
+                <Link to="/">
+                  <Button variant="outline" size="sm" className="font-heading mt-2">Explore a City</Button>
+                </Link>
+              </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {searches.map((s) => (
-                  <div key={s.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+                  <div key={s.id} className="flex items-center justify-between py-2.5 border-b border-border/30 last:border-0">
                     <div className="flex items-center gap-2">
                       <MapPin className="w-3.5 h-3.5 text-primary" />
                       <span className="text-sm font-heading">
@@ -239,18 +340,27 @@ const Account = () => {
 
         {/* Saved Cities */}
         <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="text-lg font-heading flex items-center gap-2">
-              <MapPin className="w-4 h-4" /> Saved Cities
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-heading flex items-center gap-2">
+              <BookmarkPlus className="w-4 h-4 text-primary" /> Saved Cities
+              {!isPro && (
+                <span className="text-[11px] text-muted-foreground font-normal ml-auto">
+                  {savedCities.length} / 10
+                </span>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {savedCities.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No saved cities yet.</p>
+              <div className="text-center py-6 space-y-2">
+                <BookmarkPlus className="w-8 h-8 text-muted-foreground/40 mx-auto" />
+                <p className="text-sm text-muted-foreground">No saved cities yet</p>
+                <p className="text-xs text-muted-foreground">Search a city and click save to bookmark it</p>
+              </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {savedCities.map((c) => (
-                  <div key={c.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+                  <div key={c.id} className="flex items-center justify-between py-2.5 border-b border-border/30 last:border-0">
                     <span className="text-sm font-heading">
                       {c.city_name}{c.state_region ? `, ${c.state_region}` : ""}
                     </span>
@@ -268,37 +378,8 @@ const Account = () => {
             )}
           </CardContent>
         </Card>
-
-        {/* Trips */}
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="text-lg font-heading flex items-center gap-2">
-              <Route className="w-4 h-4" /> Saved Trips
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {trips.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No trips yet. Search a city and start building your road trip!</p>
-            ) : (
-              <div className="space-y-2">
-                {trips.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-                    <div>
-                      <span className="text-sm font-heading font-semibold">{t.title}</span>
-                      {t.origin && t.destination && (
-                        <p className="text-xs text-muted-foreground">{t.origin} → {t.destination}</p>
-                      )}
-                    </div>
-                    <span className="text-[11px] text-muted-foreground">
-                      {new Date(t.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
+      <Footer />
     </div>
   );
 };
