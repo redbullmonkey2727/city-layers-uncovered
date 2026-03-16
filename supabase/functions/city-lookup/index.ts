@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,45 +25,44 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are an expert urban historian and infrastructure analyst. When given a city name, provide a comprehensive, fascinating breakdown of who built that city and what a first-time visitor would want to understand about what they're seeing.
+    console.log(`[city-lookup] Looking up: ${city}`);
 
-Return a JSON object with this exact structure:
+    const systemPrompt = `You are an expert urban historian. Given a city name, return ONLY a valid JSON object (no markdown, no code fences) with this structure:
 {
   "cityName": "Full official name",
-  "state": "State/province if applicable",
-  "nickname": "City's common nickname if any",
-  "population": "Current estimated population as a string",
-  "founded": "Year or period founded",
-  "summary": "2-3 sentence captivating overview of the city's story",
+  "state": "State/province",
+  "nickname": "Common nickname",
+  "population": "Current estimated population",
+  "founded": "Year founded",
+  "summary": "2-3 captivating sentences about the city",
   "whyHere": {
-    "reasons": ["Array of 3-5 reasons this location was chosen"],
-    "originalSettlers": "Who first settled here and why"
+    "reasons": ["3-5 reasons this location was chosen"],
+    "originalSettlers": "Who first settled here"
   },
   "whoBuiltThis": {
-    "keyFigures": [{"name": "Person/group name", "contribution": "What they built/did", "era": "When"}],
-    "majorDevelopers": "Who were the major developers and builders",
+    "keyFigures": [{"name": "Name", "contribution": "What they did", "era": "When"}],
+    "majorDevelopers": "Key developers",
     "keyIndustries": ["Industries that drove growth"]
   },
   "infrastructure": {
-    "waterSource": "Where the city's water comes from",
-    "powerGrid": "How the city is powered",
-    "transportNetwork": "Major roads, transit, rail, airports",
-    "notableEngineering": "Any remarkable infrastructure feats"
+    "waterSource": "Water source",
+    "powerGrid": "Power info",
+    "transportNetwork": "Transport info",
+    "notableEngineering": "Notable engineering"
   },
-  "whatYoureSeing": {
-    "architecturalStyle": "Dominant architectural styles and why",
-    "neighborhoods": [{"name": "Neighborhood name", "character": "What defines it", "era": "When it was built"}],
-    "landmarks": ["Notable landmarks and what they represent"],
-    "streetLayout": "Why the streets are laid out the way they are"
+  "whatYoureSeeing": {
+    "architecturalStyle": "Dominant styles",
+    "neighborhoods": [{"name": "Name", "character": "Character", "era": "Era"}],
+    "landmarks": ["Notable landmarks"],
+    "streetLayout": "Street layout explanation"
   },
   "layers": {
-    "periods": [{"era": "Time period", "whatWasBuilt": "What was added", "whyItMatters": "Legacy today"}]
+    "periods": [{"era": "Period", "whatWasBuilt": "What was built", "whyItMatters": "Legacy"}]
   },
-  "funFacts": ["3-5 surprising infrastructure or building facts about this city"],
-  "challenges": "Current infrastructure challenges the city faces"
+  "funFacts": ["3-5 surprising facts"],
+  "challenges": "Current challenges"
 }
-
-Be specific, accurate, and fascinating. Avoid generic statements. Include real names, dates, and details. Make invisible systems visible.`;
+Be specific and factual. Use real names and dates.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -72,119 +71,16 @@ Be specific, accurate, and fascinating. Avoid generic statements. Include real n
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Tell me everything about who built ${city} and what a first-time visitor should understand about what they're seeing. Be specific and use real facts.` },
+          { role: "user", content: `Tell me about ${city}. Return only the JSON object.` },
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "city_insights",
-              description: "Return structured city infrastructure and history data",
-              parameters: {
-                type: "object",
-                properties: {
-                  cityName: { type: "string" },
-                  state: { type: "string" },
-                  nickname: { type: "string" },
-                  population: { type: "string" },
-                  founded: { type: "string" },
-                  summary: { type: "string" },
-                  whyHere: {
-                    type: "object",
-                    properties: {
-                      reasons: { type: "array", items: { type: "string" } },
-                      originalSettlers: { type: "string" },
-                    },
-                    required: ["reasons", "originalSettlers"],
-                  },
-                  whoBuiltThis: {
-                    type: "object",
-                    properties: {
-                      keyFigures: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            name: { type: "string" },
-                            contribution: { type: "string" },
-                            era: { type: "string" },
-                          },
-                          required: ["name", "contribution", "era"],
-                        },
-                      },
-                      majorDevelopers: { type: "string" },
-                      keyIndustries: { type: "array", items: { type: "string" } },
-                    },
-                    required: ["keyFigures", "majorDevelopers", "keyIndustries"],
-                  },
-                  infrastructure: {
-                    type: "object",
-                    properties: {
-                      waterSource: { type: "string" },
-                      powerGrid: { type: "string" },
-                      transportNetwork: { type: "string" },
-                      notableEngineering: { type: "string" },
-                    },
-                    required: ["waterSource", "powerGrid", "transportNetwork", "notableEngineering"],
-                  },
-                  whatYoureSeeing: {
-                    type: "object",
-                    properties: {
-                      architecturalStyle: { type: "string" },
-                      neighborhoods: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            name: { type: "string" },
-                            character: { type: "string" },
-                            era: { type: "string" },
-                          },
-                          required: ["name", "character", "era"],
-                        },
-                      },
-                      landmarks: { type: "array", items: { type: "string" } },
-                      streetLayout: { type: "string" },
-                    },
-                    required: ["architecturalStyle", "neighborhoods", "landmarks", "streetLayout"],
-                  },
-                  layers: {
-                    type: "object",
-                    properties: {
-                      periods: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            era: { type: "string" },
-                            whatWasBuilt: { type: "string" },
-                            whyItMatters: { type: "string" },
-                          },
-                          required: ["era", "whatWasBuilt", "whyItMatters"],
-                        },
-                      },
-                    },
-                    required: ["periods"],
-                  },
-                  funFacts: { type: "array", items: { type: "string" } },
-                  challenges: { type: "string" },
-                },
-                required: [
-                  "cityName", "state", "nickname", "population", "founded", "summary",
-                  "whyHere", "whoBuiltThis", "infrastructure", "whatYoureSeeing",
-                  "layers", "funFacts", "challenges",
-                ],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "city_insights" } },
+        temperature: 0.7,
       }),
     });
+
+    console.log(`[city-lookup] AI response status: ${response.status}`);
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -195,40 +91,46 @@ Be specific, accurate, and fascinating. Avoid generic statements. Include real n
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "AI credits exhausted. Please add funds in Settings." }),
+          JSON.stringify({ error: "AI credits exhausted. Please try again later." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
+      console.error("[city-lookup] AI gateway error:", response.status, errText);
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const aiData = await response.json();
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+    console.log("[city-lookup] AI response received");
 
-    if (!toolCall) {
-      // Fallback: try parsing content as JSON
-      const content = aiData.choices?.[0]?.message?.content;
-      if (content) {
-        try {
-          const parsed = JSON.parse(content);
-          return new Response(JSON.stringify({ success: true, data: parsed }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        } catch {
-          throw new Error("Could not parse AI response");
-        }
-      }
-      throw new Error("No structured response from AI");
+    // Try tool_calls first, then content
+    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+    if (toolCall) {
+      const cityData = JSON.parse(toolCall.function.arguments);
+      return new Response(JSON.stringify({ success: true, data: cityData }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const cityData = JSON.parse(toolCall.function.arguments);
-    return new Response(JSON.stringify({ success: true, data: cityData }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const content = aiData.choices?.[0]?.message?.content;
+    if (content) {
+      // Strip markdown code fences if present
+      const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      try {
+        const parsed = JSON.parse(cleaned);
+        console.log("[city-lookup] Successfully parsed city data");
+        return new Response(JSON.stringify({ success: true, data: parsed }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (parseErr) {
+        console.error("[city-lookup] JSON parse error:", parseErr, "Content:", cleaned.substring(0, 200));
+        throw new Error("Could not parse AI response as JSON");
+      }
+    }
+
+    throw new Error("No response content from AI");
   } catch (error) {
-    console.error("city-lookup error:", error);
+    console.error("[city-lookup] Error:", error);
     const msg = error instanceof Error ? error.message : "Unknown error";
     return new Response(JSON.stringify({ error: msg }), {
       status: 500,
