@@ -18,6 +18,7 @@ import CitySimulation from "@/components/city/CitySimulation";
 import Takeaway from "@/components/city/Takeaway";
 import ProgressNav from "@/components/city/ProgressNav";
 import PaywallModal from "@/components/PaywallModal";
+import Footer from "@/components/Footer";
 
 const FREE_LOOKUP_LIMIT = 5;
 
@@ -31,14 +32,12 @@ const Index = () => {
   const handleSearch = async (city: string) => {
     // Usage enforcement for free users
     if (user && subscription.plan !== "pro" && profile) {
-      // Check if we need to reset monthly count
       const resetAt = profile.lookup_reset_at ? new Date(profile.lookup_reset_at) : new Date(0);
       const now = new Date();
       const monthsSinceReset =
         (now.getFullYear() - resetAt.getFullYear()) * 12 + (now.getMonth() - resetAt.getMonth());
 
       if (monthsSinceReset >= 1) {
-        // Reset count server-side
         await supabase
           .from("profiles")
           .update({ monthly_lookup_count: 0, lookup_reset_at: now.toISOString() })
@@ -66,7 +65,6 @@ const Index = () => {
           generated_summary: data.summary,
         });
 
-        // Increment lookup count
         await supabase
           .from("profiles")
           .update({ monthly_lookup_count: (profile?.monthly_lookup_count ?? 0) + 1 })
@@ -91,7 +89,6 @@ const Index = () => {
   const handleSaveCity = async () => {
     if (!user || !cityData) return;
 
-    // Check trip limit for free users
     if (subscription.plan !== "pro") {
       const { count } = await supabase
         .from("saved_cities")
@@ -127,6 +124,7 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-background text-foreground pt-14">
         <CityResults data={cityData} onClear={handleClear} onSave={user ? handleSaveCity : undefined} />
+        <Footer />
         <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
       </div>
     );
@@ -147,6 +145,7 @@ const Index = () => {
       <SystemsDashboard />
       <CitySimulation />
       <Takeaway />
+      <Footer />
       <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
     </div>
   );
