@@ -67,14 +67,10 @@ const Index = () => {
         });
 
         // Increment lookup count
-        await supabase.rpc("increment_lookup_count" as any, { uid: user.id }).catch(() => {
-          // Fallback: manual increment
-          supabase
-            .from("profiles")
-            .update({ monthly_lookup_count: (profile?.monthly_lookup_count ?? 0) + 1 })
-            .eq("id", user.id)
-            .then(() => refreshProfile());
-        });
+        await supabase
+          .from("profiles")
+          .update({ monthly_lookup_count: (profile?.monthly_lookup_count ?? 0) + 1 })
+          .eq("id", user.id);
         refreshProfile();
       }
 
