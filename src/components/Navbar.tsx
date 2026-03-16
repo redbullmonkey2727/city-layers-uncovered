@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Menu, X } from "lucide-react";
+import { Zap, Menu, X, User, Sparkles } from "lucide-react";
 
 const Navbar = () => {
   const { user, subscription, signOut, loading } = useAuth();
@@ -19,14 +19,18 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
           {loading ? null : user ? (
             <>
-              <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-heading">
-                Pricing
+              <Link to="/pricing">
+                <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5 text-primary hover:text-primary hover:bg-primary/10">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Pricing
+                </Button>
               </Link>
               <Link to="/account">
-                <Button variant="ghost" size="sm" className="font-heading text-sm">
+                <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5">
+                  <User className="w-3.5 h-3.5" />
                   Account
                 </Button>
               </Link>
@@ -36,7 +40,7 @@ const Navbar = () => {
                 </Badge>
               ) : (
                 <Link to="/pricing">
-                  <Button size="sm" className="font-heading text-sm gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
+                  <Button size="sm" className="font-heading text-sm gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25 ml-1">
                     <Zap className="w-3.5 h-3.5" />
                     Unlock Full Access
                   </Button>
@@ -56,8 +60,11 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-heading">
-                Pricing
+              <Link to="/pricing">
+                <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5 text-primary hover:text-primary hover:bg-primary/10">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Pricing
+                </Button>
               </Link>
               <Link to="/sign-in">
                 <Button variant="ghost" size="sm" className="font-heading text-sm">
@@ -65,7 +72,7 @@ const Navbar = () => {
                 </Button>
               </Link>
               <Link to="/sign-up">
-                <Button size="sm" className="font-heading text-sm gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
+                <Button size="sm" className="font-heading text-sm gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25">
                   <Zap className="w-3.5 h-3.5" />
                   Start Free
                 </Button>
@@ -89,6 +96,16 @@ const Navbar = () => {
         <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-md px-6 py-4 space-y-3">
           {loading ? null : user ? (
             <>
+              <Link to="/pricing" onClick={() => setMobileOpen(false)}>
+                <Button variant="ghost" className="w-full font-heading gap-1.5 text-primary">
+                  <Sparkles className="w-4 h-4" /> Pricing
+                </Button>
+              </Link>
+              <Link to="/account" onClick={() => setMobileOpen(false)}>
+                <Button variant="ghost" className="w-full font-heading gap-1.5">
+                  <User className="w-4 h-4" /> Account
+                </Button>
+              </Link>
               {!isPro && (
                 <Link to="/pricing" onClick={() => setMobileOpen(false)}>
                   <Button className="w-full font-heading gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
@@ -104,9 +121,6 @@ const Navbar = () => {
                   </Badge>
                 </div>
               )}
-              <Link to="/account" onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" className="w-full font-heading">Account</Button>
-              </Link>
               <Button
                 variant="ghost"
                 className="w-full text-muted-foreground"
@@ -121,6 +135,11 @@ const Navbar = () => {
             </>
           ) : (
             <>
+              <Link to="/pricing" onClick={() => setMobileOpen(false)}>
+                <Button variant="ghost" className="w-full font-heading gap-1.5 text-primary">
+                  <Sparkles className="w-4 h-4" /> Pricing
+                </Button>
+              </Link>
               <Link to="/sign-up" onClick={() => setMobileOpen(false)}>
                 <Button className="w-full font-heading gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Zap className="w-4 h-4" />
@@ -129,9 +148,6 @@ const Navbar = () => {
               </Link>
               <Link to="/sign-in" onClick={() => setMobileOpen(false)}>
                 <Button variant="ghost" className="w-full font-heading">Sign In</Button>
-              </Link>
-              <Link to="/pricing" onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" className="w-full font-heading text-muted-foreground">Pricing</Button>
               </Link>
             </>
           )}

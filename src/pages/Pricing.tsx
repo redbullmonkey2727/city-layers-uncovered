@@ -8,8 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/Footer";
 import {
   Check, X, Loader2, Shield, Zap, Crown, ArrowRight,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, ExternalLink,
 } from "lucide-react";
+
 
 const comparisonFeatures = [
   { feature: "City lookups per month", free: "5", pro: "Unlimited" },
@@ -45,6 +46,7 @@ const Pricing = () => {
   const { user, subscription } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -60,11 +62,17 @@ const Pricing = () => {
     }
     setLoading(true);
     setError(null);
+    setCheckoutUrl(null);
     try {
       const { data, error: fnError } = await supabase.functions.invoke("create-checkout");
       if (fnError) throw fnError;
       if (data?.url) {
-        window.open(data.url, "_blank");
+        // Try opening in new tab; if blocked, show fallback link
+        const win = window.open(data.url, "_blank");
+        if (!win) {
+          setCheckoutUrl(data.url);
+          toast({ title: "Popup blocked", description: "Click the link below to continue to checkout." });
+        }
       } else {
         throw new Error("No checkout URL returned");
       }
@@ -179,6 +187,17 @@ const Pricing = () => {
                     </>
                   )}
                 </Button>
+                {checkoutUrl && (
+                  <a
+                    href={checkoutUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full text-sm text-primary hover:underline font-heading py-2"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Open Stripe Checkout
+                  </a>
+                )}
                 {error && (
                   <div className="space-y-2">
                     <p className="text-xs text-destructive text-center">{error}</p>
