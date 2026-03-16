@@ -46,6 +46,7 @@ const Pricing = () => {
   const { user, subscription } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -61,11 +62,17 @@ const Pricing = () => {
     }
     setLoading(true);
     setError(null);
+    setCheckoutUrl(null);
     try {
       const { data, error: fnError } = await supabase.functions.invoke("create-checkout");
       if (fnError) throw fnError;
       if (data?.url) {
-        window.open(data.url, "_blank");
+        // Try opening in new tab; if blocked, show fallback link
+        const win = window.open(data.url, "_blank");
+        if (!win) {
+          setCheckoutUrl(data.url);
+          toast({ title: "Popup blocked", description: "Click the link below to continue to checkout." });
+        }
       } else {
         throw new Error("No checkout URL returned");
       }
