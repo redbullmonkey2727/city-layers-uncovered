@@ -14,7 +14,301 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      billing_events: {
+        Row: {
+          created_at: string
+          event_type: string | null
+          id: string
+          payload: Json | null
+          stripe_customer_id: string | null
+          stripe_event_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string | null
+          id?: string
+          payload?: Json | null
+          stripe_customer_id?: string | null
+          stripe_event_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string | null
+          id?: string
+          payload?: Json | null
+          stripe_customer_id?: string | null
+          stripe_event_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          lookup_reset_at: string | null
+          monthly_lookup_count: number
+          plan: string
+          stripe_customer_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          lookup_reset_at?: string | null
+          monthly_lookup_count?: number
+          plan?: string
+          stripe_customer_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          lookup_reset_at?: string | null
+          monthly_lookup_count?: number
+          plan?: string
+          stripe_customer_id?: string | null
+        }
+        Relationships: []
+      }
+      saved_cities: {
+        Row: {
+          city_name: string
+          country: string | null
+          created_at: string
+          id: string
+          insights_json: Json | null
+          state_region: string | null
+          summary: string | null
+          user_id: string
+        }
+        Insert: {
+          city_name: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          insights_json?: Json | null
+          state_region?: string | null
+          summary?: string | null
+          user_id: string
+        }
+        Update: {
+          city_name?: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          insights_json?: Json | null
+          state_region?: string | null
+          summary?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_cities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      search_events: {
+        Row: {
+          city_name: string | null
+          country: string | null
+          created_at: string
+          generated_summary: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          query_text: string | null
+          state_region: string | null
+          trip_id: string | null
+          user_id: string
+          was_cached: boolean
+        }
+        Insert: {
+          city_name?: string | null
+          country?: string | null
+          created_at?: string
+          generated_summary?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          query_text?: string | null
+          state_region?: string | null
+          trip_id?: string | null
+          user_id: string
+          was_cached?: boolean
+        }
+        Update: {
+          city_name?: string | null
+          country?: string | null
+          created_at?: string
+          generated_summary?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          query_text?: string | null
+          state_region?: string | null
+          trip_id?: string | null
+          user_id?: string
+          was_cached?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_events_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "search_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          id: string
+          price_id: string | null
+          status: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          price_id?: string | null
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          price_id?: string | null
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_stops: {
+        Row: {
+          city_name: string
+          country: string | null
+          created_at: string
+          id: string
+          insight_summary: string | null
+          state_region: string | null
+          stop_order: number
+          trip_id: string
+        }
+        Insert: {
+          city_name: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          insight_summary?: string | null
+          state_region?: string | null
+          stop_order?: number
+          trip_id: string
+        }
+        Update: {
+          city_name?: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          insight_summary?: string | null
+          state_region?: string | null
+          stop_order?: number
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_stops_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trips: {
+        Row: {
+          created_at: string
+          destination: string | null
+          id: string
+          origin: string | null
+          route_json: Json | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination?: string | null
+          id?: string
+          origin?: string | null
+          route_json?: Json | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          destination?: string | null
+          id?: string
+          origin?: string | null
+          route_json?: Json | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trips_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
