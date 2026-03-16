@@ -8,8 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/Footer";
 import {
   Check, X, Loader2, Shield, Zap, Crown, ArrowRight,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, ExternalLink,
 } from "lucide-react";
+
 
 const comparisonFeatures = [
   { feature: "City lookups per month", free: "5", pro: "Unlimited" },
