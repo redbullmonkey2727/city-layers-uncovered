@@ -1,24 +1,34 @@
 import { motion } from "framer-motion";
 import type { CityData } from "@/lib/cityLookup";
+import { Button } from "@/components/ui/button";
+import { Bookmark } from "lucide-react";
 
 interface Props {
   data: CityData;
   onClear: () => void;
+  onSave?: () => void;
 }
 
-const CityResults = ({ data, onClear }: Props) => {
+const CityResults = ({ data, onClear, onSave }: Props) => {
   const fadeIn = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-16 space-y-12">
       {/* Header */}
       <motion.div {...fadeIn} transition={{ duration: 0.5 }} className="text-center">
-        <button
-          onClick={onClear}
-          className="text-xs text-muted-foreground hover:text-primary transition-colors font-heading uppercase tracking-widest mb-4 inline-block"
-        >
-          ← Search another city
-        </button>
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <button
+            onClick={onClear}
+            className="text-xs text-muted-foreground hover:text-primary transition-colors font-heading uppercase tracking-widest"
+          >
+            ← Search another city
+          </button>
+          {onSave && (
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs font-heading" onClick={onSave}>
+              <Bookmark className="w-3.5 h-3.5" /> Save City
+            </Button>
+          )}
+        </div>
         <h1 className="text-4xl md:text-6xl font-heading font-bold mb-2">
           <span className="text-gradient">{data.cityName}</span>
           {data.state && <span className="text-muted-foreground text-2xl md:text-3xl ml-3">{data.state}</span>}
@@ -66,7 +76,6 @@ const CityResults = ({ data, onClear }: Props) => {
       <Section title="What You're Seeing" icon="👀" delay={0.2}>
         <p className="text-muted-foreground mb-2"><strong className="text-foreground">Architecture:</strong> {data.whatYoureSeeing.architecturalStyle}</p>
         <p className="text-muted-foreground mb-4"><strong className="text-foreground">Street Layout:</strong> {data.whatYoureSeeing.streetLayout}</p>
-
         {data.whatYoureSeeing.neighborhoods.length > 0 && (
           <div className="mb-4">
             <h4 className="font-heading font-semibold text-sm mb-2">Neighborhoods</h4>
@@ -81,7 +90,6 @@ const CityResults = ({ data, onClear }: Props) => {
             </div>
           </div>
         )}
-
         <div className="flex flex-wrap gap-2">
           {data.whatYoureSeeing.landmarks.map((l, i) => (
             <span key={i} className="px-2.5 py-1 rounded-full bg-secondary/10 text-secondary text-xs">{l}</span>

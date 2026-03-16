@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { lookupCity, type CityData } from "@/lib/cityLookup";
+import { supabase } from "@/integrations/supabase/client";
 import HeroSection from "@/components/city/HeroSection";
 import CityResults from "@/components/city/CityResults";
 import BigIdea from "@/components/city/BigIdea";
@@ -15,19 +17,63 @@ import SystemsDashboard from "@/components/city/SystemsDashboard";
 import CitySimulation from "@/components/city/CitySimulation";
 import Takeaway from "@/components/city/Takeaway";
 import ProgressNav from "@/components/city/ProgressNav";
+import PaywallModal from "@/components/PaywallModal";
+
+const FREE_LOOKUP_LIMIT = 5;
 
 const Index = () => {
   const [cityData, setCityData] = useState<CityData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const { toast } = useToast();
+  const { user, profile, subscription, refreshProfile } = useAuth();
 
   const handleSearch = async (city: string) => {
+    // Usage enforcement for free users
+    if (user && subscription.plan !== "pro" && profile) {
+      // Check if we need to reset monthly count
+      const resetAt = profile.lookup_reset_at ? new Date(profile.lookup_reset_at) : new Date(0);
+      const now = new Date();
+      const monthsSinceReset =
+        (now.getFullYear() - resetAt.getFullYear()) * 12 + (now.getMonth() - resetAt.getMonth());
+
+      if (monthsSinceReset >= 1) {
+        // Reset count server-side
+        await supabase
+          .from("profiles")
+          .update({ monthly_lookup_count: 0, lookup_reset_at: now.toISOString() })
+          .eq("id", user.id);
+        await refreshProfile();
+      } else if (profile.monthly_lookup_count >= FREE_LOOKUP_LIMIT) {
+        setShowPaywall(true);
+        return;
+      }
+    }
+
     setIsLoading(true);
     setCityData(null);
     try {
       const data = await lookupCity(city);
       setCityData(data);
-      // Scroll to top to see results
+
+      // Track search and increment usage for signed-in users
+      if (user) {
+        await supabase.from("search_events").insert({
+          user_id: user.id,
+          query_text: city,
+          city_name: data.cityName,
+          state_region: data.state,
+          generated_summary: data.summary,
+        });
+
+        // Increment lookup count
+        await supabase
+          .from("profiles")
+          .update({ monthly_lookup_count: (profile?.monthly_lookup_count ?? 0) + 1 })
+          .eq("id", user.id);
+        refreshProfile();
+      }
+
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
@@ -42,18 +88,52 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // If we have city results, show them
+  const handleSaveCity = async () => {
+    if (!user || !cityData) return;
+
+    // Check trip limit for free users
+    if (subscription.plan !== "pro") {
+      const { count } = await supabase
+        .from("saved_cities")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      if ((count ?? 0) >= 10) {
+        toast({
+          title: "Save limit reached",
+          description: "Upgrade to Pro for unlimited saved cities.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const { error } = await supabase.from("saved_cities").insert({
+      user_id: user.id,
+      city_name: cityData.cityName,
+      state_region: cityData.state,
+      summary: cityData.summary,
+      insights_json: cityData as any,
+    });
+
+    if (error) {
+      toast({ title: "Couldn't save", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "City saved! 📌", description: `${cityData.cityName} added to your favorites.` });
+    }
+  };
+
   if (cityData) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <CityResults data={cityData} onClear={handleClear} />
+      <div className="min-h-screen bg-background text-foreground pt-14">
+        <CityResults data={cityData} onClear={handleClear} onSave={user ? handleSaveCity : undefined} />
+        <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
       </div>
     );
   }
 
-  // Otherwise show the educational landing + search
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground pt-14">
       <ProgressNav />
       <HeroSection onSearch={handleSearch} isLoading={isLoading} />
       <BigIdea />
@@ -67,6 +147,7 @@ const Index = () => {
       <SystemsDashboard />
       <CitySimulation />
       <Takeaway />
+      <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
     </div>
   );
 };
