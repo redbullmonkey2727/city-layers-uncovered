@@ -55,6 +55,7 @@ const Index = () => {
     try {
       const data = await lookupCity(city);
       setCityData(data);
+      analytics.track({ name: "city_searched", properties: { city: data.cityName, state: data.state } });
 
       // Track search and increment usage for signed-in users
       if (user) {
