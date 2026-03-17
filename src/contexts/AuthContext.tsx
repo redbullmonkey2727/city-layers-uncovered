@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { analytics } from "@/services/analytics";
+import { crm } from "@/services/crm";
+import { email } from "@/services/email";
 import type { User, Session } from "@supabase/supabase-js";
 
 interface Profile {
