@@ -52,6 +52,114 @@ export type Database = {
           },
         ]
       }
+      api_keys: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          org_id: string
+          revoked_at: string | null
+          scopes: Json | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          org_id: string
+          revoked_at?: string | null
+          scopes?: Json | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          org_id?: string
+          revoked_at?: string | null
+          scopes?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_keys_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          org_id: string | null
+          resource_id: string | null
+          resource_type: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          org_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          org_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_events: {
         Row: {
           created_at: string
@@ -131,6 +239,134 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          line_items: Json | null
+          org_id: string | null
+          paid_at: string | null
+          pdf_url: string | null
+          period_end: string | null
+          period_start: string | null
+          status: string
+          stripe_invoice_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          line_items?: Json | null
+          org_id?: string | null
+          paid_at?: string | null
+          pdf_url?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          status?: string
+          stripe_invoice_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          line_items?: Json | null
+          org_id?: string | null
+          paid_at?: string | null
+          pdf_url?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          status?: string
+          stripe_invoice_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          assigned_to: string | null
+          company: string
+          company_size: string | null
+          contact_email: string
+          contact_name: string
+          created_at: string
+          deal_value: number | null
+          id: string
+          industry: string | null
+          notes: string | null
+          phone: string | null
+          source: string
+          stage: string
+          status: string
+          updated_at: string
+          use_case: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          company: string
+          company_size?: string | null
+          contact_email: string
+          contact_name: string
+          created_at?: string
+          deal_value?: number | null
+          id?: string
+          industry?: string | null
+          notes?: string | null
+          phone?: string | null
+          source?: string
+          stage?: string
+          status?: string
+          updated_at?: string
+          use_case?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          company?: string
+          company_size?: string | null
+          contact_email?: string
+          contact_name?: string
+          created_at?: string
+          deal_value?: number | null
+          id?: string
+          industry?: string | null
+          notes?: string | null
+          phone?: string | null
+          source?: string
+          stage?: string
+          status?: string
+          updated_at?: string
+          use_case?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_log: {
         Row: {
           channel: string
@@ -172,6 +408,101 @@ export type Database = {
           {
             foreignKeyName: "notification_log_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_members: {
+        Row: {
+          id: string
+          invited_at: string | null
+          invited_email: string | null
+          joined_at: string | null
+          org_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          invited_at?: string | null
+          invited_email?: string | null
+          joined_at?: string | null
+          org_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          invited_at?: string | null
+          invited_email?: string | null
+          joined_at?: string | null
+          org_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          industry: string | null
+          logo_url: string | null
+          name: string
+          owner_id: string | null
+          plan: string
+          seats_limit: number
+          slug: string
+          stripe_customer_id: string | null
+          website: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          name: string
+          owner_id?: string | null
+          plan?: string
+          seats_limit?: number
+          slug: string
+          stripe_customer_id?: string | null
+          website?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          name?: string
+          owner_id?: string | null
+          plan?: string
+          seats_limit?: number
+          slug?: string
+          stripe_customer_id?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizations_owner_id_fkey"
+            columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

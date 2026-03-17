@@ -14,6 +14,10 @@ import Account from "./pages/Account.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Support from "./pages/Support.tsx";
 import Admin from "./pages/Admin.tsx";
+import Settings from "./pages/Settings.tsx";
+import Sales from "./pages/Sales.tsx";
+import ContactSales from "./pages/ContactSales.tsx";
+import Finance from "./pages/Finance.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -36,6 +40,10 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/support" element={<Support />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/sales" element={<Sales />} />
+            <Route path="/contact-sales" element={<ContactSales />} />
+            <Route path="/finance" element={<Finance />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
