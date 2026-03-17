@@ -104,13 +104,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           });
           if (_event === "SIGNED_IN") {
             analytics.track({ name: "login_completed", properties: { method: "email" } });
-          }
-          if (_event === "SIGNED_UP" && sess.user.email) {
-            analytics.track({ name: "signup_completed", properties: { method: "email", user_id: sess.user.id } });
-            // CRM: sync new signup
-            crm.syncNewSignup(sess.user.id, sess.user.email, sess.user.user_metadata?.full_name);
-            // Email: send welcome
-            email.sendWelcome(sess.user.id, sess.user.email, sess.user.user_metadata?.full_name);
+            // On first sign-in after signup, sync to CRM + send welcome
+            const isNewUser = sess.user.created_at && 
+              (Date.now() - new Date(sess.user.created_at).getTime()) < 60000;
+            if (isNewUser && sess.user.email) {
+              analytics.track({ name: "signup_completed", properties: { method: "email", user_id: sess.user.id } });
+              crm.syncNewSignup(sess.user.id, sess.user.email, sess.user.user_metadata?.full_name);
+              email.sendWelcome(sess.user.id, sess.user.email, sess.user.user_metadata?.full_name);
+            }
           }
           setTimeout(() => refreshSubscription(), 100);
         } else {
