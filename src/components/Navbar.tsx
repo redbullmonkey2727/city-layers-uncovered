@@ -34,6 +34,18 @@ const Navbar = () => {
                   Account
                 </Button>
               </Link>
+              <Link to="/support">
+                <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5">
+                  <LifeBuoy className="w-3.5 h-3.5" />
+                  Support
+                </Button>
+              </Link>
+              <Link to="/admin">
+                <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5">
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  Ops
+                </Button>
+              </Link>
               {isPro ? (
                 <Badge className="text-[10px] uppercase tracking-wider bg-primary/15 text-primary border-primary/30">
                   ✦ Pro
