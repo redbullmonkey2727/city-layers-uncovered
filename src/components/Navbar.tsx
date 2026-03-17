@@ -5,14 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Zap, Menu, X, User, Sparkles, LifeBuoy, BarChart3,
-  Settings, DollarSign, Phone,
+  Settings, DollarSign, Phone, Shield,
 } from "lucide-react";
 
 const Navbar = () => {
-  const { user, subscription, signOut, loading } = useAuth();
+  const { user, subscription, signOut, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isPro = subscription.plan === "pro";
+
+  const adminLinks = [
+    { to: "/settings", label: "Settings", icon: Settings },
+    { to: "/admin", label: "Ops", icon: BarChart3 },
+    { to: "/sales", label: "Sales", icon: Phone },
+    { to: "/finance", label: "Finance", icon: DollarSign },
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
@@ -35,26 +42,18 @@ const Navbar = () => {
                   <User className="w-3.5 h-3.5" /> Account
                 </Button>
               </Link>
-              <Link to="/settings">
-                <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5">
-                  <Settings className="w-3.5 h-3.5" /> Settings
-                </Button>
-              </Link>
-              <Link to="/admin">
-                <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5">
-                  <BarChart3 className="w-3.5 h-3.5" /> Ops
-                </Button>
-              </Link>
-              <Link to="/sales">
-                <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5">
-                  <Phone className="w-3.5 h-3.5" /> Sales
-                </Button>
-              </Link>
-              <Link to="/finance">
-                <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5" /> Finance
-                </Button>
-              </Link>
+              {isAdmin && adminLinks.map(({ to, label, icon: Icon }) => (
+                <Link key={to} to={to}>
+                  <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5">
+                    <Icon className="w-3.5 h-3.5" /> {label}
+                  </Button>
+                </Link>
+              ))}
+              {isAdmin && (
+                <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-destructive/40 text-destructive ml-1 gap-1">
+                  <Shield className="w-2.5 h-2.5" /> Admin
+                </Badge>
+              )}
               {isPro ? (
                 <Badge className="text-[10px] uppercase tracking-wider bg-primary/15 text-primary border-primary/30 ml-1">
                   ✦ Pro
@@ -116,12 +115,14 @@ const Navbar = () => {
             <>
               {[
                 { to: "/account", label: "Account", icon: User },
-                { to: "/settings", label: "Settings", icon: Settings },
-                { to: "/admin", label: "Ops Dashboard", icon: BarChart3 },
-                { to: "/sales", label: "Sales Pipeline", icon: Phone },
-                { to: "/finance", label: "Finance", icon: DollarSign },
                 { to: "/support", label: "Support", icon: LifeBuoy },
                 { to: "/pricing", label: "Pricing", icon: Sparkles },
+                ...(isAdmin ? [
+                  { to: "/settings", label: "Settings", icon: Settings },
+                  { to: "/admin", label: "Ops Dashboard", icon: BarChart3 },
+                  { to: "/sales", label: "Sales Pipeline", icon: Phone },
+                  { to: "/finance", label: "Finance", icon: DollarSign },
+                ] : []),
               ].map(({ to, label, icon: Icon }) => (
                 <Link key={to} to={to} onClick={() => setMobileOpen(false)}>
                   <Button variant="ghost" className="w-full font-heading gap-1.5 justify-start">
