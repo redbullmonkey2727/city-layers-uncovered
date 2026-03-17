@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
+import RequireAdmin from "@/components/RequireAdmin";
 import Index from "./pages/Index.tsx";
 import SignIn from "./pages/SignIn.tsx";
 import SignUp from "./pages/SignUp.tsx";
@@ -39,11 +40,12 @@ const App = () => (
             <Route path="/account" element={<Account />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/support" element={<Support />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/sales" element={<Sales />} />
             <Route path="/contact-sales" element={<ContactSales />} />
-            <Route path="/finance" element={<Finance />} />
+            {/* Admin-only routes */}
+            <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
+            <Route path="/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
+            <Route path="/sales" element={<RequireAdmin><Sales /></RequireAdmin>} />
+            <Route path="/finance" element={<RequireAdmin><Finance /></RequireAdmin>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

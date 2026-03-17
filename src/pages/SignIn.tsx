@@ -15,7 +15,11 @@ const SignIn = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    // Map shorthand "admin" to the real admin email
+    const loginEmail = email.trim().toLowerCase() === "admin" ? "admin@citylayers.com" : email;
+
+    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
     setLoading(false);
     if (error) {
       toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
@@ -33,8 +37,8 @@ const SignIn = () => {
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            type="email"
-            placeholder="Email"
+            type="text"
+            placeholder="Email or username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
