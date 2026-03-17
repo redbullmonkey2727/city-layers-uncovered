@@ -67,12 +67,7 @@ const Pricing = () => {
       const { data, error: fnError } = await supabase.functions.invoke("create-checkout");
       if (fnError) throw fnError;
       if (data?.url) {
-        // Try opening in new tab; if blocked, show fallback link
-        const win = window.open(data.url, "_blank");
-        if (!win) {
-          setCheckoutUrl(data.url);
-          toast({ title: "Popup blocked", description: "Click the link below to continue to checkout." });
-        }
+        window.location.href = data.url;
       } else {
         throw new Error("No checkout URL returned");
       }
