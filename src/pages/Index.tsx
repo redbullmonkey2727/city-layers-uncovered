@@ -3,6 +3,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { lookupCity, type CityData } from "@/lib/cityLookup";
 import { supabase } from "@/integrations/supabase/client";
+import { analytics } from "@/services/analytics";
 import HeroSection from "@/components/city/HeroSection";
 import CityResults from "@/components/city/CityResults";
 import BigIdea from "@/components/city/BigIdea";
@@ -54,6 +55,7 @@ const Index = () => {
     try {
       const data = await lookupCity(city);
       setCityData(data);
+      analytics.track({ name: "city_searched", properties: { city: data.cityName, state: data.state } });
 
       // Track search and increment usage for signed-in users
       if (user) {

@@ -32,9 +32,11 @@ const Footer = () => {
         <p className="text-sm text-muted-foreground font-heading">
           © {new Date().getFullYear()} Who Built All This?
         </p>
-        <div className="flex items-center gap-6 text-sm text-muted-foreground">
+        <div className="flex items-center gap-6 text-sm text-muted-foreground flex-wrap">
           <Link to="/pricing" className="hover:text-foreground transition-colors font-heading">Pricing</Link>
+          <Link to="/support" className="hover:text-foreground transition-colors font-heading">Support</Link>
           <Link to="/account" className="hover:text-foreground transition-colors font-heading">Account</Link>
+          <Link to="/admin" className="hover:text-foreground transition-colors font-heading">Ops Dashboard</Link>
           {!user && (
             <Link to="/sign-up" className="hover:text-primary transition-colors font-heading font-medium text-foreground">
               Sign Up

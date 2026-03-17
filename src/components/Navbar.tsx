@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Menu, X, User, Sparkles } from "lucide-react";
+import { Zap, Menu, X, User, Sparkles, LifeBuoy, BarChart3 } from "lucide-react";
 
 const Navbar = () => {
   const { user, subscription, signOut, loading } = useAuth();
@@ -32,6 +32,18 @@ const Navbar = () => {
                 <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5">
                   <User className="w-3.5 h-3.5" />
                   Account
+                </Button>
+              </Link>
+              <Link to="/support">
+                <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5">
+                  <LifeBuoy className="w-3.5 h-3.5" />
+                  Support
+                </Button>
+              </Link>
+              <Link to="/admin">
+                <Button variant="ghost" size="sm" className="font-heading text-sm gap-1.5">
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  Ops
                 </Button>
               </Link>
               {isPro ? (
