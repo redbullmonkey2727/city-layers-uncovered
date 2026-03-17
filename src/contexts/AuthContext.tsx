@@ -97,11 +97,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(sess?.user ?? null);
         if (sess?.user) {
           await fetchProfile(sess.user.id);
-          // Defer subscription check to avoid blocking
+          // Identify user for analytics + CRM
+          analytics.identify(sess.user.id, {
+            email: sess.user.email,
+            created_at: sess.user.created_at,
+          });
+          if (_event === "SIGNED_IN") {
+            analytics.track({ name: "login_completed", properties: { method: "email" } });
+          }
+          if (_event === "SIGNED_UP" && sess.user.email) {
+            analytics.track({ name: "signup_completed", properties: { method: "email", user_id: sess.user.id } });
+            // CRM: sync new signup
+            crm.syncNewSignup(sess.user.id, sess.user.email, sess.user.user_metadata?.full_name);
+            // Email: send welcome
+            email.sendWelcome(sess.user.id, sess.user.email, sess.user.user_metadata?.full_name);
+          }
           setTimeout(() => refreshSubscription(), 100);
         } else {
           setProfile(null);
           setSubscription(defaultSub);
+          analytics.reset();
         }
         setLoading(false);
       }
