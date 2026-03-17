@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Menu, X, User, Sparkles } from "lucide-react";
+import { Zap, Menu, X, User, Sparkles, LifeBuoy, BarChart3 } from "lucide-react";
 
 const Navbar = () => {
   const { user, subscription, signOut, loading } = useAuth();
