@@ -149,7 +149,7 @@ class EmailService {
     } catch (error) {
       console.error("[Email] Send failed:", error);
       if (payload.userId) {
-        await supabase.from("notification_log").insert({
+        await (supabase.from("notification_log") as any).insert({
           user_id: payload.userId,
           channel: "email",
           template_name: payload.template,

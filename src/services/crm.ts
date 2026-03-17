@@ -181,7 +181,7 @@ class CRMService {
     errorMessage?: string
   ) {
     try {
-      await supabase.from("crm_sync_log").insert({
+      await (supabase.from("crm_sync_log") as any).insert({
         user_id: userId,
         event_type: eventType,
         provider: this.provider.name,

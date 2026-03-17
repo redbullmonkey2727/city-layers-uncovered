@@ -166,7 +166,7 @@ class AnalyticsService {
     // 2. Persist to warehouse table (if user is identified)
     if (this.userId) {
       try {
-        await supabase.from("analytics_events").insert({
+        await (supabase.from("analytics_events") as any).insert({
           user_id: this.userId,
           event_name: event.name,
           properties: event.properties as Record<string, unknown>,
