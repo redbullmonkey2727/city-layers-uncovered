@@ -90,6 +90,7 @@ const HeroSection = ({ onSearch, isLoading }: Props) => {
         </motion.p>
 
         <CitySearch onSearch={onSearch} isLoading={isLoading} />
+        <RecentSearches onSelect={onSearch} />
 
         <motion.div
           className="mt-8 flex flex-col items-center gap-3"
