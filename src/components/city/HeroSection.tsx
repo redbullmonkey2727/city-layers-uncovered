@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import CitySearch from "./CitySearch";
+import RecentSearches from "./RecentSearches";
 
 interface Props {
   onSearch: (city: string) => void;
