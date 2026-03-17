@@ -28,6 +28,7 @@ interface AuthContextType {
   profile: Profile | null;
   subscription: SubscriptionInfo;
   loading: boolean;
+  isAdmin: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
@@ -46,6 +47,7 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   subscription: defaultSub,
   loading: true,
+  isAdmin: false,
   signOut: async () => {},
   refreshProfile: async () => {},
   refreshSubscription: async () => {},
@@ -59,6 +61,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [subscription, setSubscription] = useState<SubscriptionInfo>(defaultSub);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const checkAdminRole = useCallback(async (userId: string) => {
+    const { data } = await supabase.rpc("has_role" as any, { _user_id: userId, _role: "admin" });
+    setIsAdmin(!!data);
+  }, []);
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -90,21 +98,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user, fetchProfile]);
 
   useEffect(() => {
-    // Set up auth listener first
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(
       async (_event, sess) => {
         setSession(sess);
         setUser(sess?.user ?? null);
         if (sess?.user) {
           await fetchProfile(sess.user.id);
-          // Identify user for analytics + CRM
+          await checkAdminRole(sess.user.id);
           analytics.identify(sess.user.id, {
             email: sess.user.email,
             created_at: sess.user.created_at,
           });
           if (_event === "SIGNED_IN") {
             analytics.track({ name: "login_completed", properties: { method: "email" } });
-            // On first sign-in after signup, sync to CRM + send welcome
             const isNewUser = sess.user.created_at && 
               (Date.now() - new Date(sess.user.created_at).getTime()) < 60000;
             if (isNewUser && sess.user.email) {
@@ -117,27 +123,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setProfile(null);
           setSubscription(defaultSub);
+          setIsAdmin(false);
           analytics.reset();
         }
         setLoading(false);
       }
     );
 
-    // Then check existing session
     supabase.auth.getSession().then(({ data: { session: sess } }) => {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
         fetchProfile(sess.user.id);
+        checkAdminRole(sess.user.id);
         setTimeout(() => refreshSubscription(), 100);
       }
       setLoading(false);
     });
 
     return () => authSub.unsubscribe();
-  }, [fetchProfile, refreshSubscription]);
+  }, [fetchProfile, refreshSubscription, checkAdminRole]);
 
-  // Periodic subscription refresh every 60s
   useEffect(() => {
     if (!user) return;
     const interval = setInterval(refreshSubscription, 60000);
@@ -150,11 +156,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(null);
     setProfile(null);
     setSubscription(defaultSub);
+    setIsAdmin(false);
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, session, profile, subscription, loading, signOut, refreshProfile, refreshSubscription }}
+      value={{ user, session, profile, subscription, loading, isAdmin, signOut, refreshProfile, refreshSubscription }}
     >
       {children}
     </AuthContext.Provider>
