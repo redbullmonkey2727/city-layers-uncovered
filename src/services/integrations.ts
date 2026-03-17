@@ -176,8 +176,7 @@ export async function getRecentWebhookEvents(limit = 20) {
  * Get CRM sync statistics
  */
 export async function getCRMSyncStats() {
-  const { data } = await supabase
-    .from("crm_sync_log")
+  const { data } = await (supabase.from("crm_sync_log") as any)
     .select("status, event_type")
     .order("created_at", { ascending: false })
     .limit(100);
