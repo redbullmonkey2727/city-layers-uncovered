@@ -1,8 +1,8 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import type { CityData, CityImages } from "@/lib/cityLookup";
 import { Button } from "@/components/ui/button";
-import { Bookmark, ChevronLeft, ChevronRight, MapPin, Users, Calendar, Sparkles, ChevronDown, X, ZoomIn, Share2, TrendingUp } from "lucide-react";
+import { Bookmark, ChevronLeft, ChevronRight, MapPin, Users, Calendar, Sparkles, ChevronDown, X, ZoomIn, Share2, TrendingUp, ThermometerSun, Footprints, DollarSign, ArrowUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -37,7 +37,37 @@ const AnimatedCounter = ({ value, duration = 2000 }: { value: string; duration?:
   return <span>{display}</span>;
 };
 
-/* ── Radar chart for city characteristics ── */
+/* ── Animated ring score ── */
+const ScoreRing = ({ score, label, color, icon }: { score: number; label: string; color: string; icon: React.ReactNode }) => {
+  const circumference = 2 * Math.PI * 32;
+  const offset = circumference - (score / 100) * circumference;
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="relative w-20 h-20">
+        <svg viewBox="0 0 72 72" className="w-full h-full -rotate-90">
+          <circle cx="36" cy="36" r="32" fill="none" stroke="hsl(var(--muted))" strokeWidth="4" />
+          <motion.circle
+            cx="36" cy="36" r="32" fill="none" stroke={color} strokeWidth="4" strokeLinecap="round"
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-lg font-heading font-bold">{score}</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-1 text-xs text-muted-foreground font-heading">
+        {icon}
+        {label}
+      </div>
+    </div>
+  );
+};
+
+/* ── Radar chart ── */
 const CityRadar = ({ data }: { data: CityData }) => {
   const traits = [
     { label: "History", value: Math.min(data.layers.periods.length / 5, 1) },
@@ -58,52 +88,68 @@ const CityRadar = ({ data }: { data: CityData }) => {
   const dataPath = dataPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
 
   return (
-    <div className="glass-card p-5">
-      <h4 className="font-heading font-semibold text-sm mb-3 flex items-center gap-2">
-        <TrendingUp className="w-4 h-4 text-primary" /> City Profile
-      </h4>
-      <svg viewBox="0 0 200 200" className="w-full max-w-[220px] mx-auto">
-        {/* Grid */}
-        {gridLevels.map((level) => {
-          const points = Array.from({ length: n }).map((_, i) => getPoint(i, level));
-          const path = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
-          return <path key={level} d={path} fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" />;
-        })}
-        {/* Axes */}
-        {traits.map((_, i) => {
-          const p = getPoint(i, 1);
-          return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="hsl(var(--border))" strokeWidth="0.5" />;
-        })}
-        {/* Data */}
-        <motion.path
-          d={dataPath}
-          fill="hsl(var(--primary) / 0.15)"
-          stroke="hsl(var(--primary))"
-          strokeWidth="1.5"
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          style={{ transformOrigin: "100px 100px" }}
+    <svg viewBox="0 0 200 200" className="w-full max-w-[220px] mx-auto">
+      {gridLevels.map((level) => {
+        const points = Array.from({ length: n }).map((_, i) => getPoint(i, level));
+        const path = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
+        return <path key={level} d={path} fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" />;
+      })}
+      {traits.map((_, i) => {
+        const p = getPoint(i, 1);
+        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="hsl(var(--border))" strokeWidth="0.5" />;
+      })}
+      <motion.path
+        d={dataPath}
+        fill="hsl(var(--primary) / 0.15)"
+        stroke="hsl(var(--primary))"
+        strokeWidth="1.5"
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
+        style={{ transformOrigin: "100px 100px" }}
+      />
+      {dataPoints.map((p, i) => (
+        <motion.circle key={i} cx={p.x} cy={p.y} r="3" fill="hsl(var(--primary))"
+          initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.7 + i * 0.1 }}
         />
-        {/* Data points */}
-        {dataPoints.map((p, i) => (
-          <motion.circle key={i} cx={p.x} cy={p.y} r="3" fill="hsl(var(--primary))"
-            initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.7 + i * 0.1 }}
-          />
-        ))}
-        {/* Labels */}
-        {traits.map((t, i) => {
-          const p = getPoint(i, 1.22);
-          return (
-            <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
-              fill="hsl(var(--muted-foreground))" fontSize="7" fontFamily="var(--font-heading)" fontWeight="500"
-            >
-              {t.label}
-            </text>
-          );
-        })}
-      </svg>
-    </div>
+      ))}
+      {traits.map((t, i) => {
+        const p = getPoint(i, 1.22);
+        return (
+          <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(var(--muted-foreground))" fontSize="7" fontFamily="var(--font-heading)" fontWeight="500"
+          >
+            {t.label}
+          </text>
+        );
+      })}
+    </svg>
+  );
+};
+
+/* ── Scroll-to-top button ── */
+const ScrollToTop = () => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 600);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-6 right-6 z-40 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/30 hover:brightness-110 transition-all"
+        >
+          <ArrowUp className="w-4 h-4" />
+        </motion.button>
+      )}
+    </AnimatePresence>
   );
 };
 
@@ -111,7 +157,17 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
   const fadeIn = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [expandedTimeline, setExpandedTimeline] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"overview" | "deep-dive">("overview");
   const { toast } = useToast();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+
+  // Derived scores for visual widgets
+  const walkScore = Math.min(95, Math.max(30, data.whatYoureSeeing.neighborhoods.length * 12 + 35));
+  const historyScore = Math.min(98, data.layers.periods.length * 15 + 20);
+  const infraScore = data.infrastructure.notableEngineering ? 82 : 55;
 
   const handleShare = async () => {
     const text = `Check out ${data.cityName}, ${data.state} — ${data.summary.slice(0, 100)}...`;
@@ -125,6 +181,8 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
 
   return (
     <div className="space-y-0">
+      <ScrollToTop />
+
       {/* ── Lightbox ── */}
       <AnimatePresence>
         {lightboxSrc && (
@@ -145,26 +203,26 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
         )}
       </AnimatePresence>
 
-      {/* ── Immersive Hero ── */}
-      <div className="relative min-h-[70vh] flex items-end overflow-hidden">
-        <div className="absolute inset-0">
+      {/* ── Parallax Hero ── */}
+      <div ref={heroRef} className="relative min-h-[75vh] flex items-end overflow-hidden">
+        <motion.div className="absolute inset-0" style={{ scale: heroScale }}>
           {images.hero ? (
             <motion.img
               src={images.hero}
               alt={`${data.cityName} skyline`}
               className="w-full h-full object-cover cursor-pointer"
-              initial={{ scale: 1.1, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 1.2 }}
               onClick={() => setLightboxSrc(images.hero!)}
             />
           ) : (
             <Skeleton className="w-full h-full rounded-none" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
-        </div>
+        </motion.div>
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/20" />
 
-        <div className="relative z-10 w-full max-w-5xl mx-auto px-6 pb-12 pt-32">
+        <motion.div className="relative z-10 w-full max-w-5xl mx-auto px-6 pb-14 pt-32" style={{ opacity: heroOpacity }}>
           <motion.div {...fadeIn} transition={{ duration: 0.6, delay: 0.2 }}>
             <div className="flex items-center gap-3 mb-6">
               <button
@@ -195,7 +253,6 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
               <p className="text-muted-foreground font-heading text-lg italic mt-1">"{data.nickname}"</p>
             )}
 
-            {/* Animated stats bar */}
             <div className="flex flex-wrap items-center gap-5 mt-6">
               <motion.span className="flex items-center gap-1.5 text-sm text-muted-foreground"
                 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
@@ -211,7 +268,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
               </motion.span>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       </div>
 
       {/* ── Summary Banner ── */}
@@ -225,222 +282,309 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
         </p>
       </motion.div>
 
+      {/* ── Tab Navigation ── */}
+      <div className="sticky top-14 z-30 bg-background/80 backdrop-blur-md border-b border-border/40">
+        <div className="max-w-5xl mx-auto px-6 flex gap-1">
+          {(["overview", "deep-dive"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-3 text-sm font-heading font-medium transition-all border-b-2 ${
+                activeTab === tab
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab === "overview" ? "📊 Overview" : "🔍 Deep Dive"}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="max-w-5xl mx-auto px-6 py-16 space-y-16">
 
-        {/* ── Radar + Quick Stats Row ── */}
-        <motion.div {...fadeIn} transition={{ delay: 0.1 }} className="grid md:grid-cols-[1fr_280px] gap-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {[
-              { icon: "🏗️", label: "Key Figures", value: String(data.whoBuiltThis.keyFigures.length) },
-              { icon: "🏘️", label: "Neighborhoods", value: String(data.whatYoureSeeing.neighborhoods.length) },
-              { icon: "🏛️", label: "Landmarks", value: String(data.whatYoureSeeing.landmarks.length) },
-              { icon: "📅", label: "Historical Eras", value: String(data.layers.periods.length) },
-              { icon: "🏭", label: "Industries", value: String(data.whoBuiltThis.keyIndustries.length) },
-              { icon: "💡", label: "Fun Facts", value: String(data.funFacts.length) },
-            ].map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                className="glass-card p-4 text-center hover:border-primary/30 transition-colors"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 + i * 0.06 }}
-              >
-                <span className="text-2xl block mb-1">{stat.icon}</span>
-                <span className="text-xl font-heading font-bold text-primary"><AnimatedCounter value={stat.value} duration={1200} /></span>
-                <span className="text-[10px] text-muted-foreground font-heading uppercase tracking-wider block mt-1">{stat.label}</span>
-              </motion.div>
-            ))}
-          </div>
-          <CityRadar data={data} />
-        </motion.div>
+        <AnimatePresence mode="wait">
+          {activeTab === "overview" ? (
+            <motion.div key="overview" className="space-y-16"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
+            >
+              {/* ── Score Rings + Radar ── */}
+              <div className="grid md:grid-cols-[1fr_280px] gap-6">
+                <div className="space-y-6">
+                  {/* Score rings */}
+                  <div className="glass-card p-6">
+                    <h4 className="font-heading font-semibold text-sm mb-5 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-primary" /> City Scores
+                    </h4>
+                    <div className="flex justify-around">
+                      <ScoreRing score={walkScore} label="Walkability" color="hsl(var(--secondary))" icon={<Footprints className="w-3 h-3" />} />
+                      <ScoreRing score={historyScore} label="History" color="hsl(var(--primary))" icon={<Calendar className="w-3 h-3" />} />
+                      <ScoreRing score={infraScore} label="Infrastructure" color="hsl(var(--infra-water))" icon={<ThermometerSun className="w-3 h-3" />} />
+                    </div>
+                  </div>
 
-        {/* ── Why Here + Landmark Image ── */}
-        <Section title="Why Here?" icon="📍" delay={0.1}>
-          <div className="grid md:grid-cols-2 gap-8 items-start">
-            <div>
-              <p className="text-muted-foreground mb-5 leading-relaxed">{data.whyHere.originalSettlers}</p>
-              <div className="space-y-2">
-                {data.whyHere.reasons.map((r, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + i * 0.08 }}
-                    className="flex items-center gap-3 group"
-                  >
-                    <span className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center text-primary text-xs font-bold font-heading group-hover:bg-primary group-hover:text-primary-foreground transition-colors">{i + 1}</span>
-                    <span className="text-sm text-foreground/90">{r}</span>
-                  </motion.div>
-                ))}
+                  {/* Quick stats grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {[
+                      { icon: "🏗️", label: "Key Figures", value: String(data.whoBuiltThis.keyFigures.length) },
+                      { icon: "🏘️", label: "Neighborhoods", value: String(data.whatYoureSeeing.neighborhoods.length) },
+                      { icon: "🏛️", label: "Landmarks", value: String(data.whatYoureSeeing.landmarks.length) },
+                      { icon: "📅", label: "Historical Eras", value: String(data.layers.periods.length) },
+                      { icon: "🏭", label: "Industries", value: String(data.whoBuiltThis.keyIndustries.length) },
+                      { icon: "💡", label: "Fun Facts", value: String(data.funFacts.length) },
+                    ].map((stat, i) => (
+                      <motion.div
+                        key={stat.label}
+                        className="glass-card p-4 text-center hover:border-primary/30 transition-colors group"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 + i * 0.06 }}
+                        whileHover={{ y: -2 }}
+                      >
+                        <span className="text-2xl block mb-1 group-hover:scale-110 transition-transform">{stat.icon}</span>
+                        <span className="text-xl font-heading font-bold text-primary"><AnimatedCounter value={stat.value} duration={1200} /></span>
+                        <span className="text-[10px] text-muted-foreground font-heading uppercase tracking-wider block mt-1">{stat.label}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="glass-card p-5">
+                  <h4 className="font-heading font-semibold text-sm mb-3 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-primary" /> City Profile
+                  </h4>
+                  <CityRadar data={data} />
+                </div>
               </div>
-            </div>
-            <CityImage src={images.landmark} alt={`${data.cityName} landmark`} onZoom={setLightboxSrc} />
-          </div>
-        </Section>
 
-        {/* ── Who Built This ── */}
-        <Section title="Who Built This?" icon="🏗️" delay={0.15}>
-          <p className="text-muted-foreground mb-6 leading-relaxed">{data.whoBuiltThis.majorDevelopers}</p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            {data.whoBuiltThis.keyFigures.map((f, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.08 }}
-                className="glass-card p-5 hover:border-primary/30 transition-all group hover:-translate-y-1 duration-300"
-              >
-                <h4 className="font-heading font-semibold text-sm group-hover:text-primary transition-colors">{f.name}</h4>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{f.contribution}</p>
-                <span className="text-[10px] text-primary/70 font-heading mt-3 inline-block uppercase tracking-wider">{f.era}</span>
-              </motion.div>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {data.whoBuiltThis.keyIndustries.map((ind, i) => (
-              <motion.span key={i} className="px-3 py-1.5 rounded-full bg-secondary/10 text-secondary text-xs font-heading hover:bg-secondary/20 transition-colors cursor-default"
-                initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 + i * 0.05 }}
-              >{ind}</motion.span>
-            ))}
-          </div>
-        </Section>
-
-        {/* ── Street Scene Image ── */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <CityImage src={images.street} alt={`${data.cityName} street scene`} aspectWide onZoom={setLightboxSrc} />
-          <p className="text-center text-xs text-muted-foreground mt-3 font-heading uppercase tracking-wider">
-            Street life in {data.cityName}
-          </p>
-        </motion.div>
-
-        {/* ── What You're Seeing ── */}
-        <Section title="What You're Seeing" icon="👀" delay={0.2}>
-          <div className="grid md:grid-cols-2 gap-6 mb-6">
-            <div className="glass-card p-5 hover:border-primary/30 transition-colors">
-              <span className="text-xs uppercase tracking-wider text-primary font-heading font-semibold">Architecture</span>
-              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{data.whatYoureSeeing.architecturalStyle}</p>
-            </div>
-            <div className="glass-card p-5 hover:border-secondary/30 transition-colors">
-              <span className="text-xs uppercase tracking-wider text-secondary font-heading font-semibold">Street Layout</span>
-              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{data.whatYoureSeeing.streetLayout}</p>
-            </div>
-          </div>
-
-          {data.whatYoureSeeing.neighborhoods.length > 0 && (
-            <div className="mb-6">
-              <h4 className="font-heading font-semibold text-sm mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" /> Neighborhoods
-              </h4>
-              <NeighborhoodCarousel neighborhoods={data.whatYoureSeeing.neighborhoods} />
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-2">
-            {data.whatYoureSeeing.landmarks.map((l, i) => (
-              <motion.span
-                key={i}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 + i * 0.05 }}
-                className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-heading hover:bg-primary/20 transition-colors cursor-default"
-              >
-                {l}
-              </motion.span>
-            ))}
-          </div>
-        </Section>
-
-        {/* ── Infrastructure ── */}
-        <Section title="The Invisible Systems" icon="🔧" delay={0.25}>
-          <InfraVisual data={data} />
-        </Section>
-
-        {/* ── Aerial Image ── */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <CityImage src={images.aerial} alt={`${data.cityName} aerial view`} aspectWide onZoom={setLightboxSrc} />
-          <p className="text-center text-xs text-muted-foreground mt-3 font-heading uppercase tracking-wider">
-            Aerial view of {data.cityName}
-          </p>
-        </motion.div>
-
-        {/* ── Layers of Time (Interactive Expandable Timeline) ── */}
-        <Section title="Layers of Time" icon="📅" delay={0.3}>
-          <div className="relative">
-            <div className="absolute left-4 top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-primary/20 to-transparent" />
-            <div className="space-y-4">
-              {data.layers.periods.map((p, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.35 + i * 0.1 }}
-                  className="flex gap-5 items-start pl-0"
-                >
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/15 border-2 border-primary/40 flex items-center justify-center z-10 cursor-pointer hover:bg-primary/30 transition-colors"
-                    onClick={() => setExpandedTimeline(expandedTimeline === i ? null : i)}
-                  >
-                    <span className="text-[10px] font-heading font-bold text-primary">{i + 1}</span>
-                  </div>
-                  <div className="flex-1">
-                    <button
-                      className="w-full text-left glass-card p-5 hover:border-primary/30 transition-all group"
-                      onClick={() => setExpandedTimeline(expandedTimeline === i ? null : i)}
+              {/* ── Image Gallery ── */}
+              <div>
+                <h3 className="font-heading font-semibold text-sm mb-4 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+                  📷 City Views
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {(["hero", "landmark", "street", "aerial"] as const).map((key, i) => (
+                    <motion.div
+                      key={key}
+                      className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.3 + i * 0.1 }}
+                      onClick={() => images[key] && setLightboxSrc(images[key]!)}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-heading font-semibold text-primary uppercase tracking-wider">{p.era}</span>
-                        <motion.div animate={{ rotate: expandedTimeline === i ? 180 : 0 }}>
-                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                      {images[key] ? (
+                        <>
+                          <img src={images[key]} alt={`${data.cityName} ${key}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-[10px] font-heading uppercase tracking-wider text-foreground/90">{key}</span>
+                          </div>
+                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ZoomIn className="w-3 h-3" />
+                          </div>
+                        </>
+                      ) : (
+                        <Skeleton className="w-full h-full" />
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Fun Facts as cards ── */}
+              <Section title="Things You Didn't Know" icon="💡" delay={0.2}>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {data.funFacts.map((fact, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 + i * 0.08 }}
+                      className="glass-card p-5 flex items-start gap-3 hover:border-primary/30 transition-all hover:-translate-y-0.5 duration-300"
+                    >
+                      <Sparkles className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-muted-foreground leading-relaxed">{fact}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </Section>
+
+              {/* ── Challenges ── */}
+              <Section title="Current Challenges" icon="⚠️" delay={0.25}>
+                <div className="glass-card p-6 border-destructive/20">
+                  <p className="text-muted-foreground leading-relaxed">{data.challenges}</p>
+                </div>
+              </Section>
+            </motion.div>
+          ) : (
+            <motion.div key="deep-dive" className="space-y-16"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
+            >
+              {/* ── Why Here + Landmark Image ── */}
+              <Section title="Why Here?" icon="📍" delay={0.1}>
+                <div className="grid md:grid-cols-2 gap-8 items-start">
+                  <div>
+                    <p className="text-muted-foreground mb-5 leading-relaxed">{data.whyHere.originalSettlers}</p>
+                    <div className="space-y-2">
+                      {data.whyHere.reasons.map((r, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.2 + i * 0.08 }}
+                          className="flex items-center gap-3 group"
+                        >
+                          <span className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center text-primary text-xs font-bold font-heading group-hover:bg-primary group-hover:text-primary-foreground transition-colors">{i + 1}</span>
+                          <span className="text-sm text-foreground/90">{r}</span>
                         </motion.div>
-                      </div>
-                      <p className="text-sm mt-2 text-foreground">{p.whatWasBuilt}</p>
-                      <AnimatePresence>
-                        {expandedTimeline === i && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pt-3 mt-3 border-t border-border/50">
-                              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-heading">Why it matters</span>
-                              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{p.whyItMatters}</p>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </button>
+                      ))}
+                    </div>
                   </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </Section>
+                  <CityImage src={images.landmark} alt={`${data.cityName} landmark`} onZoom={setLightboxSrc} />
+                </div>
+              </Section>
 
-        {/* ── Fun Facts ── */}
-        <Section title="Things You Didn't Know" icon="💡" delay={0.35}>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {data.funFacts.map((fact, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + i * 0.08 }}
-                className="glass-card p-5 flex items-start gap-3 hover:border-primary/30 transition-all hover:-translate-y-0.5 duration-300"
-              >
-                <Sparkles className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-muted-foreground leading-relaxed">{fact}</p>
+              {/* ── Who Built This ── */}
+              <Section title="Who Built This?" icon="🏗️" delay={0.15}>
+                <p className="text-muted-foreground mb-6 leading-relaxed">{data.whoBuiltThis.majorDevelopers}</p>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  {data.whoBuiltThis.keyFigures.map((f, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 + i * 0.08 }}
+                      className="glass-card p-5 hover:border-primary/30 transition-all group hover:-translate-y-1 duration-300"
+                    >
+                      <h4 className="font-heading font-semibold text-sm group-hover:text-primary transition-colors">{f.name}</h4>
+                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{f.contribution}</p>
+                      <span className="text-[10px] text-primary/70 font-heading mt-3 inline-block uppercase tracking-wider">{f.era}</span>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {data.whoBuiltThis.keyIndustries.map((ind, i) => (
+                    <motion.span key={i} className="px-3 py-1.5 rounded-full bg-secondary/10 text-secondary text-xs font-heading hover:bg-secondary/20 transition-colors cursor-default"
+                      initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 + i * 0.05 }}
+                    >{ind}</motion.span>
+                  ))}
+                </div>
+              </Section>
+
+              {/* ── Street Scene Image ── */}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                <CityImage src={images.street} alt={`${data.cityName} street scene`} aspectWide onZoom={setLightboxSrc} />
+                <p className="text-center text-xs text-muted-foreground mt-3 font-heading uppercase tracking-wider">
+                  Street life in {data.cityName}
+                </p>
               </motion.div>
-            ))}
-          </div>
-        </Section>
 
-        {/* ── Challenges ── */}
-        <Section title="Current Challenges" icon="⚠️" delay={0.4}>
-          <div className="glass-card p-6 border-destructive/20">
-            <p className="text-muted-foreground leading-relaxed">{data.challenges}</p>
-          </div>
-        </Section>
+              {/* ── What You're Seeing ── */}
+              <Section title="What You're Seeing" icon="👀" delay={0.2}>
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div className="glass-card p-5 hover:border-primary/30 transition-colors">
+                    <span className="text-xs uppercase tracking-wider text-primary font-heading font-semibold">Architecture</span>
+                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{data.whatYoureSeeing.architecturalStyle}</p>
+                  </div>
+                  <div className="glass-card p-5 hover:border-secondary/30 transition-colors">
+                    <span className="text-xs uppercase tracking-wider text-secondary font-heading font-semibold">Street Layout</span>
+                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{data.whatYoureSeeing.streetLayout}</p>
+                  </div>
+                </div>
+
+                {data.whatYoureSeeing.neighborhoods.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="font-heading font-semibold text-sm mb-3 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-primary" /> Neighborhoods
+                    </h4>
+                    <NeighborhoodCarousel neighborhoods={data.whatYoureSeeing.neighborhoods} />
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-2">
+                  {data.whatYoureSeeing.landmarks.map((l, i) => (
+                    <motion.span
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.3 + i * 0.05 }}
+                      className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-heading hover:bg-primary/20 transition-colors cursor-default"
+                    >
+                      {l}
+                    </motion.span>
+                  ))}
+                </div>
+              </Section>
+
+              {/* ── Infrastructure ── */}
+              <Section title="The Invisible Systems" icon="🔧" delay={0.25}>
+                <InfraVisual data={data} />
+              </Section>
+
+              {/* ── Aerial Image ── */}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <CityImage src={images.aerial} alt={`${data.cityName} aerial view`} aspectWide onZoom={setLightboxSrc} />
+                <p className="text-center text-xs text-muted-foreground mt-3 font-heading uppercase tracking-wider">
+                  Aerial view of {data.cityName}
+                </p>
+              </motion.div>
+
+              {/* ── Layers of Time ── */}
+              <Section title="Layers of Time" icon="📅" delay={0.3}>
+                <div className="relative">
+                  <div className="absolute left-4 top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-primary/20 to-transparent" />
+                  <div className="space-y-4">
+                    {data.layers.periods.map((p, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.35 + i * 0.1 }}
+                        className="flex gap-5 items-start pl-0"
+                      >
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/15 border-2 border-primary/40 flex items-center justify-center z-10 cursor-pointer hover:bg-primary/30 transition-colors"
+                          onClick={() => setExpandedTimeline(expandedTimeline === i ? null : i)}
+                        >
+                          <span className="text-[10px] font-heading font-bold text-primary">{i + 1}</span>
+                        </div>
+                        <div className="flex-1">
+                          <button
+                            className="w-full text-left glass-card p-5 hover:border-primary/30 transition-all group"
+                            onClick={() => setExpandedTimeline(expandedTimeline === i ? null : i)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-heading font-semibold text-primary uppercase tracking-wider">{p.era}</span>
+                              <motion.div animate={{ rotate: expandedTimeline === i ? 180 : 0 }}>
+                                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                              </motion.div>
+                            </div>
+                            <p className="text-sm mt-2 text-foreground">{p.whatWasBuilt}</p>
+                            <AnimatePresence>
+                              {expandedTimeline === i && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="pt-3 mt-3 border-t border-border/50">
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-heading">Why it matters</span>
+                                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{p.whyItMatters}</p>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </Section>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Footer CTA */}
         <motion.div {...fadeIn} transition={{ delay: 0.5 }} className="text-center pt-8">
@@ -479,7 +623,7 @@ const CityImage = ({ src, alt, aspectWide, onZoom }: { src?: string; alt: string
         <motion.img
           src={src}
           alt={alt}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
@@ -499,7 +643,6 @@ const CityImage = ({ src, alt, aspectWide, onZoom }: { src?: string; alt: string
   </div>
 );
 
-/** Interactive infrastructure visual for the results page */
 const InfraVisual = ({ data }: { data: CityData }) => {
   const [activeInfra, setActiveInfra] = useState<string | null>(null);
   const items = [
@@ -519,6 +662,7 @@ const InfraVisual = ({ data }: { data: CityData }) => {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 + i * 0.08 }}
+          whileHover={{ y: -2 }}
         >
           <div className="flex items-center gap-2 mb-2">
             <span className="text-lg">{item.emoji}</span>

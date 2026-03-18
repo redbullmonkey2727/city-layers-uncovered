@@ -3,28 +3,31 @@ import { motion, AnimatePresence } from "framer-motion";
 import SectionWrapper from "./SectionWrapper";
 import { utilityLayers } from "@/data/cityData";
 
-/** Interactive cross-section diagram showing underground utilities. */
 const UndergroundInfra = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [digMode, setDigMode] = useState(false);
+  const [dugLayers, setDugLayers] = useState<Set<string>>(new Set());
   const selected = utilityLayers.find((u) => u.id === selectedId);
 
-  // Vertical positions for each utility in the SVG
   const positions: Record<string, number> = {
-    fiber: 40,
-    gas: 70,
-    electric: 105,
-    water: 145,
-    sewer: 195,
-    storm: 250,
+    fiber: 40, gas: 70, electric: 105, water: 145, sewer: 195, storm: 250,
   };
 
   const pipeRadius: Record<string, number> = {
-    fiber: 5,
-    gas: 7,
-    electric: 8,
-    water: 12,
-    sewer: 15,
-    storm: 18,
+    fiber: 5, gas: 7, electric: 8, water: 12, sewer: 15, storm: 18,
+  };
+
+  const handlePipeClick = (id: string) => {
+    if (digMode) {
+      setDugLayers((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        return next;
+      });
+      setSelectedId(id);
+    } else {
+      setSelectedId(selectedId === id ? null : id);
+    }
   };
 
   return (
@@ -34,6 +37,25 @@ const UndergroundInfra = () => {
       title="The Hidden Miracle Underground"
       subtitle="Before any house is built, an invisible city of pipes and cables must be installed beneath every street. This is the most expensive, most coordinated, and least appreciated part of civilization."
     >
+      {/* Dig mode toggle */}
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={() => { setDigMode(!digMode); setDugLayers(new Set()); }}
+          className={`px-4 py-2 rounded-lg text-sm font-heading font-medium transition-all ${
+            digMode
+              ? "bg-primary/20 text-primary border border-primary/30"
+              : "glass-card hover:bg-muted"
+          }`}
+        >
+          {digMode ? "⛏️ Dig Mode ON" : "⛏️ Try Dig Mode"}
+        </button>
+        {digMode && (
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-primary/70">
+            Click pipes to "dig" and reveal them · {dugLayers.size}/{utilityLayers.length} found
+          </motion.p>
+        )}
+      </div>
+
       <div className="grid lg:grid-cols-[1fr_380px] gap-8 items-start">
         {/* Cross-section SVG */}
         <div className="glass-card p-4 md:p-6 overflow-hidden">
@@ -41,34 +63,37 @@ const UndergroundInfra = () => {
             {/* Sky */}
             <rect x="0" y="0" width="700" height="30" fill="hsl(220 20% 12%)" />
 
-            {/* Surface elements */}
             {/* Streetlight */}
             <rect x="120" y="5" width="3" height="25" fill="hsl(var(--muted-foreground) / 0.5)" />
             <circle cx="126" cy="6" r="4" fill="hsl(var(--primary) / 0.6)" />
+            <motion.circle cx="126" cy="6" r="8" fill="hsl(var(--primary) / 0.1)"
+              animate={{ r: [6, 12, 6], opacity: [0.3, 0.1, 0.3] }}
+              transition={{ duration: 4, repeat: Infinity }}
+            />
 
             {/* Tree */}
             <circle cx="580" cy="12" r="14" fill="hsl(150 35% 25% / 0.6)" />
             <rect x="578" y="22" width="4" height="8" fill="hsl(30 30% 25% / 0.5)" />
 
-            {/* Sidewalk left */}
+            {/* Sidewalks */}
             <rect x="0" y="27" width="160" height="8" fill="hsl(var(--muted-foreground) / 0.25)" />
-            {/* Road */}
             <rect x="165" y="25" width="370" height="12" rx="1" fill="hsl(var(--infra-road) / 0.8)" />
-            {/* Lane markings */}
             {[200, 270, 340, 410, 480].map((x) => (
               <rect key={x} x={x} y="30" width="25" height="2" fill="hsl(var(--primary) / 0.4)" rx="1" />
             ))}
-            {/* Sidewalk right */}
             <rect x="540" y="27" width="160" height="8" fill="hsl(var(--muted-foreground) / 0.25)" />
-
-            {/* Curbs */}
             <rect x="160" y="25" width="4" height="12" fill="hsl(var(--muted-foreground) / 0.4)" />
             <rect x="536" y="25" width="4" height="12" fill="hsl(var(--muted-foreground) / 0.4)" />
 
+            {/* Moving car */}
+            <motion.rect
+              x={0} y="28" width="16" height="6" rx="3" fill="hsl(var(--primary) / 0.4)"
+              animate={{ x: [0, 700] }}
+              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            />
+
             {/* Underground soil */}
             <rect x="0" y="37" width="700" height="283" fill="hsl(25 20% 12%)" />
-
-            {/* Soil texture lines */}
             {[60, 100, 150, 200, 260].map((y) => (
               <line key={y} x1="0" y1={y} x2="700" y2={y} stroke="hsl(25 15% 15%)" strokeWidth="0.5" />
             ))}
@@ -89,26 +114,23 @@ const UndergroundInfra = () => {
               </g>
             ))}
 
-            {/* Utility pipes / conduits */}
+            {/* Utility pipes */}
             {utilityLayers.map((util) => {
               const y = positions[util.id];
               const r = pipeRadius[util.id];
               const isSelected = selectedId === util.id;
               const dimmed = selectedId && !isSelected;
+              const hidden = digMode && !dugLayers.has(util.id);
 
               return (
                 <g
                   key={util.id}
-                  onClick={() => setSelectedId(isSelected ? null : util.id)}
+                  onClick={() => handlePipeClick(util.id)}
                   className="cursor-pointer"
                 >
-                  {/* Glow when selected */}
                   {isSelected && (
                     <motion.ellipse
-                      cx="350"
-                      cy={y}
-                      rx={r * 2 + 15}
-                      ry={r + 8}
+                      cx="350" cy={y} rx={r * 2 + 15} ry={r + 8}
                       fill={`hsl(${util.color.replace("var(--infra-", "").replace(")", "")} / 0.15)`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: [0.2, 0.4, 0.2] }}
@@ -117,56 +139,70 @@ const UndergroundInfra = () => {
                   )}
 
                   {/* Left pipe */}
-                  <circle
-                    cx="100"
-                    cy={y}
-                    r={r}
+                  <circle cx="100" cy={y} r={r}
                     fill={`hsl(${util.color.replace("var(--", "").replace(")", "")})`}
-                    opacity={dimmed ? 0.15 : 1}
+                    opacity={hidden ? 0.05 : dimmed ? 0.15 : 1}
                     className="transition-opacity duration-300"
                   />
                   {/* Connecting line */}
-                  <line
-                    x1={100 + r}
-                    y1={y}
-                    x2={600 - r}
-                    y2={y}
+                  <line x1={100 + r} y1={y} x2={600 - r} y2={y}
                     stroke={`hsl(${util.color.replace("var(--", "").replace(")", "")})`}
                     strokeWidth={r * 0.8}
-                    opacity={dimmed ? 0.1 : 0.7}
+                    opacity={hidden ? 0.03 : dimmed ? 0.1 : 0.7}
                     className="transition-opacity duration-300"
                   />
+                  {/* Flow animation when selected */}
+                  {isSelected && !hidden && (
+                    <motion.circle cx="100" cy={y} r={r * 0.4}
+                      fill="hsl(var(--foreground) / 0.5)"
+                      animate={{ cx: [100, 600] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    />
+                  )}
                   {/* Right pipe */}
-                  <circle
-                    cx="600"
-                    cy={y}
-                    r={r}
+                  <circle cx="600" cy={y} r={r}
                     fill={`hsl(${util.color.replace("var(--", "").replace(")", "")})`}
-                    opacity={dimmed ? 0.15 : 1}
+                    opacity={hidden ? 0.05 : dimmed ? 0.15 : 1}
                     className="transition-opacity duration-300"
                   />
 
                   {/* Label */}
-                  <text
-                    x="635"
-                    y={y + 3}
-                    fill={isSelected ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground) / 0.6)"}
-                    fontSize="8"
-                    fontFamily="var(--font-heading)"
+                  <text x="635" y={y + 3}
+                    fill={isSelected ? "hsl(var(--foreground))" : hidden ? "hsl(var(--muted-foreground) / 0.15)" : "hsl(var(--muted-foreground) / 0.6)"}
+                    fontSize="8" fontFamily="var(--font-heading)"
                     fontWeight={isSelected ? "600" : "400"}
                     className="transition-all duration-300"
                   >
-                    {util.label}
+                    {hidden ? "???" : util.label}
                   </text>
+
+                  {/* Dig marker */}
+                  {digMode && dugLayers.has(util.id) && (
+                    <motion.text x="60" y={y + 3} fontSize="10" fill="hsl(var(--primary))"
+                      initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                      ✓
+                    </motion.text>
+                  )}
                 </g>
               );
             })}
 
-            {/* "CLICK A PIPE" hint */}
-            {!selectedId && (
+            {/* Hint */}
+            {!selectedId && !digMode && (
               <text x="350" y="300" textAnchor="middle" fill="hsl(var(--muted-foreground) / 0.35)" fontSize="10" fontFamily="var(--font-body)">
                 Click any utility to explore it
               </text>
+            )}
+            {digMode && dugLayers.size === 0 && (
+              <text x="350" y="300" textAnchor="middle" fill="hsl(var(--primary) / 0.5)" fontSize="10" fontFamily="var(--font-body)">
+                Click to dig and discover what's underground!
+              </text>
+            )}
+            {digMode && dugLayers.size === utilityLayers.length && (
+              <motion.text x="350" y="300" textAnchor="middle" fill="hsl(var(--primary))" fontSize="12" fontFamily="var(--font-heading)" fontWeight="600"
+                initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                🎉 You found all 6 utility systems!
+              </motion.text>
             )}
           </svg>
         </div>
