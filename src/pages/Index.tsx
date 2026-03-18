@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { lookupCity, type CityData } from "@/lib/cityLookup";
+import { lookupCity, generateCityImage, type CityData, type CityImages } from "@/lib/cityLookup";
 import { supabase } from "@/integrations/supabase/client";
 import { analytics } from "@/services/analytics";
 import HeroSection from "@/components/city/HeroSection";
@@ -25,6 +25,7 @@ const FREE_LOOKUP_LIMIT = 5;
 
 const Index = () => {
   const [cityData, setCityData] = useState<CityData | null>(null);
+  const [cityImages, setCityImages] = useState<CityImages>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const { toast } = useToast();
@@ -52,10 +53,20 @@ const Index = () => {
 
     setIsLoading(true);
     setCityData(null);
+    setCityImages({});
     try {
       const data = await lookupCity(city);
       setCityData(data);
       analytics.track({ name: "city_searched", properties: { city: data.cityName, state: data.state } });
+
+      // Generate images in parallel (non-blocking)
+      const imageStyles = ["hero", "landmark", "street", "aerial"] as const;
+      imageStyles.forEach(async (style) => {
+        const url = await generateCityImage(data.cityName, style);
+        if (url) {
+          setCityImages((prev) => ({ ...prev, [style]: url }));
+        }
+      });
 
       // Track search and increment usage for signed-in users
       if (user) {
@@ -85,6 +96,7 @@ const Index = () => {
 
   const handleClear = () => {
     setCityData(null);
+    setCityImages({});
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -125,7 +137,7 @@ const Index = () => {
   if (cityData) {
     return (
       <div className="min-h-screen bg-background text-foreground pt-14">
-        <CityResults data={cityData} onClear={handleClear} onSave={user ? handleSaveCity : undefined} />
+        <CityResults data={cityData} images={cityImages} onClear={handleClear} onSave={user ? handleSaveCity : undefined} />
         <Footer />
         <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
       </div>
