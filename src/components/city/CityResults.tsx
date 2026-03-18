@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { CityData, CityImages } from "@/lib/cityLookup";
 import { Button } from "@/components/ui/button";
-import { Bookmark, ChevronLeft, ChevronRight, MapPin, Users, Calendar, Sparkles } from "lucide-react";
+import { Bookmark, ChevronLeft, ChevronRight, MapPin, Users, Calendar, Sparkles, ChevronDown, X, ZoomIn, Share2, TrendingUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Props {
   data: CityData;
@@ -12,23 +13,150 @@ interface Props {
   onSave?: () => void;
 }
 
+/* ── Animated counter ── */
+const AnimatedCounter = ({ value, duration = 2000 }: { value: string; duration?: number }) => {
+  const [display, setDisplay] = useState("0");
+  const numericMatch = value.match(/^([\d,]+)/);
+
+  useEffect(() => {
+    if (!numericMatch) { setDisplay(value); return; }
+    const target = parseInt(numericMatch[1].replace(/,/g, ""));
+    if (isNaN(target)) { setDisplay(value); return; }
+    const suffix = value.slice(numericMatch[1].length);
+    const start = performance.now();
+    const animate = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(target * eased);
+      setDisplay(current.toLocaleString() + suffix);
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [value, duration]);
+
+  return <span>{display}</span>;
+};
+
+/* ── Radar chart for city characteristics ── */
+const CityRadar = ({ data }: { data: CityData }) => {
+  const traits = [
+    { label: "History", value: Math.min(data.layers.periods.length / 5, 1) },
+    { label: "Culture", value: Math.min(data.whatYoureSeeing.neighborhoods.length / 4, 1) },
+    { label: "Industry", value: Math.min(data.whoBuiltThis.keyIndustries.length / 5, 1) },
+    { label: "Landmarks", value: Math.min(data.whatYoureSeeing.landmarks.length / 5, 1) },
+    { label: "Infra", value: data.infrastructure.notableEngineering ? 0.8 : 0.4 },
+    { label: "Green", value: data.funFacts.length > 3 ? 0.7 : 0.5 },
+  ];
+  const n = traits.length;
+  const cx = 100, cy = 100, r = 70;
+  const getPoint = (i: number, scale: number) => {
+    const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+    return { x: cx + Math.cos(angle) * r * scale, y: cy + Math.sin(angle) * r * scale };
+  };
+  const gridLevels = [0.25, 0.5, 0.75, 1];
+  const dataPoints = traits.map((t, i) => getPoint(i, t.value));
+  const dataPath = dataPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
+
+  return (
+    <div className="glass-card p-5">
+      <h4 className="font-heading font-semibold text-sm mb-3 flex items-center gap-2">
+        <TrendingUp className="w-4 h-4 text-primary" /> City Profile
+      </h4>
+      <svg viewBox="0 0 200 200" className="w-full max-w-[220px] mx-auto">
+        {/* Grid */}
+        {gridLevels.map((level) => {
+          const points = Array.from({ length: n }).map((_, i) => getPoint(i, level));
+          const path = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
+          return <path key={level} d={path} fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" />;
+        })}
+        {/* Axes */}
+        {traits.map((_, i) => {
+          const p = getPoint(i, 1);
+          return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="hsl(var(--border))" strokeWidth="0.5" />;
+        })}
+        {/* Data */}
+        <motion.path
+          d={dataPath}
+          fill="hsl(var(--primary) / 0.15)"
+          stroke="hsl(var(--primary))"
+          strokeWidth="1.5"
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          style={{ transformOrigin: "100px 100px" }}
+        />
+        {/* Data points */}
+        {dataPoints.map((p, i) => (
+          <motion.circle key={i} cx={p.x} cy={p.y} r="3" fill="hsl(var(--primary))"
+            initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.7 + i * 0.1 }}
+          />
+        ))}
+        {/* Labels */}
+        {traits.map((t, i) => {
+          const p = getPoint(i, 1.22);
+          return (
+            <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
+              fill="hsl(var(--muted-foreground))" fontSize="7" fontFamily="var(--font-heading)" fontWeight="500"
+            >
+              {t.label}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
+  );
+};
+
 const CityResults = ({ data, images, onClear, onSave }: Props) => {
   const fadeIn = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [expandedTimeline, setExpandedTimeline] = useState<number | null>(null);
+  const { toast } = useToast();
+
+  const handleShare = async () => {
+    const text = `Check out ${data.cityName}, ${data.state} — ${data.summary.slice(0, 100)}...`;
+    if (navigator.share) {
+      try { await navigator.share({ title: `${data.cityName} — City Layers`, text }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copied to clipboard! 📋" });
+    }
+  };
 
   return (
     <div className="space-y-0">
+      {/* ── Lightbox ── */}
+      <AnimatePresence>
+        {lightboxSrc && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-background/90 backdrop-blur-md flex items-center justify-center p-6 cursor-pointer"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setLightboxSrc(null)}
+          >
+            <button className="absolute top-6 right-6 w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted">
+              <X className="w-5 h-5" />
+            </button>
+            <motion.img
+              src={lightboxSrc} alt="Fullscreen view"
+              className="max-w-full max-h-[85vh] object-contain rounded-xl"
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Immersive Hero ── */}
       <div className="relative min-h-[70vh] flex items-end overflow-hidden">
-        {/* Background image with overlay */}
         <div className="absolute inset-0">
           {images.hero ? (
             <motion.img
               src={images.hero}
               alt={`${data.cityName} skyline`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover cursor-pointer"
               initial={{ scale: 1.1, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 1.2 }}
+              onClick={() => setLightboxSrc(images.hero!)}
             />
           ) : (
             <Skeleton className="w-full h-full rounded-none" />
@@ -36,7 +164,6 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
         </div>
 
-        {/* Hero content */}
         <div className="relative z-10 w-full max-w-5xl mx-auto px-6 pb-12 pt-32">
           <motion.div {...fadeIn} transition={{ duration: 0.6, delay: 0.2 }}>
             <div className="flex items-center gap-3 mb-6">
@@ -46,11 +173,16 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
               >
                 <ChevronLeft className="w-3 h-3" /> Back
               </button>
-              {onSave && (
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs font-heading bg-background/50 backdrop-blur-sm border-border/50" onClick={onSave}>
-                  <Bookmark className="w-3.5 h-3.5" /> Save City
+              <div className="flex gap-2">
+                {onSave && (
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs font-heading bg-background/50 backdrop-blur-sm border-border/50" onClick={onSave}>
+                    <Bookmark className="w-3.5 h-3.5" /> Save
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs font-heading bg-background/50 backdrop-blur-sm border-border/50" onClick={handleShare}>
+                  <Share2 className="w-3.5 h-3.5" /> Share
                 </Button>
-              )}
+              </div>
             </div>
 
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-bold leading-none mb-3">
@@ -63,10 +195,20 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
               <p className="text-muted-foreground font-heading text-lg italic mt-1">"{data.nickname}"</p>
             )}
 
-            <div className="flex flex-wrap items-center gap-5 mt-6 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-primary" /> Founded {data.founded}</span>
-              <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-primary" /> {data.population}</span>
-              <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-primary" /> {data.state}</span>
+            {/* Animated stats bar */}
+            <div className="flex flex-wrap items-center gap-5 mt-6">
+              <motion.span className="flex items-center gap-1.5 text-sm text-muted-foreground"
+                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
+                <Calendar className="w-4 h-4 text-primary" /> Founded <span className="text-foreground font-semibold">{data.founded}</span>
+              </motion.span>
+              <motion.span className="flex items-center gap-1.5 text-sm text-muted-foreground"
+                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+                <Users className="w-4 h-4 text-primary" /> <span className="text-foreground font-semibold"><AnimatedCounter value={data.population} /></span>
+              </motion.span>
+              <motion.span className="flex items-center gap-1.5 text-sm text-muted-foreground"
+                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 }}>
+                <MapPin className="w-4 h-4 text-primary" /> {data.state}
+              </motion.span>
             </div>
           </motion.div>
         </div>
@@ -84,6 +226,34 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
       </motion.div>
 
       <div className="max-w-5xl mx-auto px-6 py-16 space-y-16">
+
+        {/* ── Radar + Quick Stats Row ── */}
+        <motion.div {...fadeIn} transition={{ delay: 0.1 }} className="grid md:grid-cols-[1fr_280px] gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {[
+              { icon: "🏗️", label: "Key Figures", value: String(data.whoBuiltThis.keyFigures.length) },
+              { icon: "🏘️", label: "Neighborhoods", value: String(data.whatYoureSeeing.neighborhoods.length) },
+              { icon: "🏛️", label: "Landmarks", value: String(data.whatYoureSeeing.landmarks.length) },
+              { icon: "📅", label: "Historical Eras", value: String(data.layers.periods.length) },
+              { icon: "🏭", label: "Industries", value: String(data.whoBuiltThis.keyIndustries.length) },
+              { icon: "💡", label: "Fun Facts", value: String(data.funFacts.length) },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                className="glass-card p-4 text-center hover:border-primary/30 transition-colors"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 + i * 0.06 }}
+              >
+                <span className="text-2xl block mb-1">{stat.icon}</span>
+                <span className="text-xl font-heading font-bold text-primary"><AnimatedCounter value={stat.value} duration={1200} /></span>
+                <span className="text-[10px] text-muted-foreground font-heading uppercase tracking-wider block mt-1">{stat.label}</span>
+              </motion.div>
+            ))}
+          </div>
+          <CityRadar data={data} />
+        </motion.div>
+
         {/* ── Why Here + Landmark Image ── */}
         <Section title="Why Here?" icon="📍" delay={0.1}>
           <div className="grid md:grid-cols-2 gap-8 items-start">
@@ -96,15 +266,15 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 + i * 0.08 }}
-                    className="flex items-center gap-3"
+                    className="flex items-center gap-3 group"
                   >
-                    <span className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center text-primary text-xs font-bold font-heading">{i + 1}</span>
+                    <span className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center text-primary text-xs font-bold font-heading group-hover:bg-primary group-hover:text-primary-foreground transition-colors">{i + 1}</span>
                     <span className="text-sm text-foreground/90">{r}</span>
                   </motion.div>
                 ))}
               </div>
             </div>
-            <CityImage src={images.landmark} alt={`${data.cityName} landmark`} />
+            <CityImage src={images.landmark} alt={`${data.cityName} landmark`} onZoom={setLightboxSrc} />
           </div>
         </Section>
 
@@ -118,7 +288,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.08 }}
-                className="glass-card p-5 hover:border-primary/30 transition-colors group"
+                className="glass-card p-5 hover:border-primary/30 transition-all group hover:-translate-y-1 duration-300"
               >
                 <h4 className="font-heading font-semibold text-sm group-hover:text-primary transition-colors">{f.name}</h4>
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{f.contribution}</p>
@@ -128,18 +298,16 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             {data.whoBuiltThis.keyIndustries.map((ind, i) => (
-              <span key={i} className="px-3 py-1.5 rounded-full bg-secondary/10 text-secondary text-xs font-heading">{ind}</span>
+              <motion.span key={i} className="px-3 py-1.5 rounded-full bg-secondary/10 text-secondary text-xs font-heading hover:bg-secondary/20 transition-colors cursor-default"
+                initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 + i * 0.05 }}
+              >{ind}</motion.span>
             ))}
           </div>
         </Section>
 
         {/* ── Street Scene Image ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <CityImage src={images.street} alt={`${data.cityName} street scene`} aspectWide />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <CityImage src={images.street} alt={`${data.cityName} street scene`} aspectWide onZoom={setLightboxSrc} />
           <p className="text-center text-xs text-muted-foreground mt-3 font-heading uppercase tracking-wider">
             Street life in {data.cityName}
           </p>
@@ -148,11 +316,11 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
         {/* ── What You're Seeing ── */}
         <Section title="What You're Seeing" icon="👀" delay={0.2}>
           <div className="grid md:grid-cols-2 gap-6 mb-6">
-            <div className="glass-card p-5">
+            <div className="glass-card p-5 hover:border-primary/30 transition-colors">
               <span className="text-xs uppercase tracking-wider text-primary font-heading font-semibold">Architecture</span>
               <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{data.whatYoureSeeing.architecturalStyle}</p>
             </div>
-            <div className="glass-card p-5">
+            <div className="glass-card p-5 hover:border-secondary/30 transition-colors">
               <span className="text-xs uppercase tracking-wider text-secondary font-heading font-semibold">Street Layout</span>
               <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{data.whatYoureSeeing.streetLayout}</p>
             </div>
@@ -174,7 +342,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 + i * 0.05 }}
-                className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-heading"
+                className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-heading hover:bg-primary/20 transition-colors cursor-default"
               >
                 {l}
               </motion.span>
@@ -184,31 +352,22 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
 
         {/* ── Infrastructure ── */}
         <Section title="The Invisible Systems" icon="🔧" delay={0.25}>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <InfraCard label="Water Source" value={data.infrastructure.waterSource} emoji="💧" />
-            <InfraCard label="Power Grid" value={data.infrastructure.powerGrid} emoji="⚡" />
-            <InfraCard label="Transport" value={data.infrastructure.transportNetwork} emoji="🚇" />
-            <InfraCard label="Notable Engineering" value={data.infrastructure.notableEngineering} emoji="🏗️" />
-          </div>
+          <InfraVisual data={data} />
         </Section>
 
         {/* ── Aerial Image ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <CityImage src={images.aerial} alt={`${data.cityName} aerial view`} aspectWide />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <CityImage src={images.aerial} alt={`${data.cityName} aerial view`} aspectWide onZoom={setLightboxSrc} />
           <p className="text-center text-xs text-muted-foreground mt-3 font-heading uppercase tracking-wider">
             Aerial view of {data.cityName}
           </p>
         </motion.div>
 
-        {/* ── Layers of Time (Interactive Timeline) ── */}
+        {/* ── Layers of Time (Interactive Expandable Timeline) ── */}
         <Section title="Layers of Time" icon="📅" delay={0.3}>
           <div className="relative">
             <div className="absolute left-4 top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-primary/20 to-transparent" />
-            <div className="space-y-6">
+            <div className="space-y-4">
               {data.layers.periods.map((p, i) => (
                 <motion.div
                   key={i}
@@ -217,13 +376,40 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                   transition={{ delay: 0.35 + i * 0.1 }}
                   className="flex gap-5 items-start pl-0"
                 >
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/15 border-2 border-primary/40 flex items-center justify-center z-10">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/15 border-2 border-primary/40 flex items-center justify-center z-10 cursor-pointer hover:bg-primary/30 transition-colors"
+                    onClick={() => setExpandedTimeline(expandedTimeline === i ? null : i)}
+                  >
                     <span className="text-[10px] font-heading font-bold text-primary">{i + 1}</span>
                   </div>
-                  <div className="flex-1 glass-card p-5 hover:border-primary/30 transition-colors">
-                    <span className="text-xs font-heading font-semibold text-primary uppercase tracking-wider">{p.era}</span>
-                    <p className="text-sm mt-2">{p.whatWasBuilt}</p>
-                    <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{p.whyItMatters}</p>
+                  <div className="flex-1">
+                    <button
+                      className="w-full text-left glass-card p-5 hover:border-primary/30 transition-all group"
+                      onClick={() => setExpandedTimeline(expandedTimeline === i ? null : i)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-heading font-semibold text-primary uppercase tracking-wider">{p.era}</span>
+                        <motion.div animate={{ rotate: expandedTimeline === i ? 180 : 0 }}>
+                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                        </motion.div>
+                      </div>
+                      <p className="text-sm mt-2 text-foreground">{p.whatWasBuilt}</p>
+                      <AnimatePresence>
+                        {expandedTimeline === i && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pt-3 mt-3 border-t border-border/50">
+                              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-heading">Why it matters</span>
+                              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{p.whyItMatters}</p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </button>
                   </div>
                 </motion.div>
               ))}
@@ -240,7 +426,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 + i * 0.08 }}
-                className="glass-card p-5 flex items-start gap-3 hover:border-primary/30 transition-colors"
+                className="glass-card p-5 flex items-start gap-3 hover:border-primary/30 transition-all hover:-translate-y-0.5 duration-300"
               >
                 <Sparkles className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-muted-foreground leading-relaxed">{fact}</p>
@@ -286,32 +472,76 @@ const Section = ({ title, icon, delay, children }: { title: string; icon: string
   </motion.section>
 );
 
-const CityImage = ({ src, alt, aspectWide }: { src?: string; alt: string; aspectWide?: boolean }) => (
-  <div className={`relative rounded-xl overflow-hidden ${aspectWide ? "aspect-[21/9]" : "aspect-[4/3]"}`}>
+const CityImage = ({ src, alt, aspectWide, onZoom }: { src?: string; alt: string; aspectWide?: boolean; onZoom?: (src: string) => void }) => (
+  <div className={`relative rounded-xl overflow-hidden group ${aspectWide ? "aspect-[21/9]" : "aspect-[4/3]"}`}>
     {src ? (
-      <motion.img
-        src={src}
-        alt={alt}
-        className="w-full h-full object-cover"
-        initial={{ opacity: 0, scale: 1.05 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8 }}
-      />
+      <>
+        <motion.img
+          src={src}
+          alt={alt}
+          className="w-full h-full object-cover"
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+        />
+        {onZoom && (
+          <button
+            onClick={() => onZoom(src)}
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <ZoomIn className="w-4 h-4 text-foreground" />
+          </button>
+        )}
+      </>
     ) : (
       <Skeleton className="w-full h-full rounded-xl" />
     )}
   </div>
 );
 
-const InfraCard = ({ label, value, emoji }: { label: string; value: string; emoji: string }) => (
-  <div className="glass-card p-5 hover:border-primary/30 transition-colors">
-    <div className="flex items-center gap-2 mb-2">
-      <span className="text-lg">{emoji}</span>
-      <span className="text-xs uppercase tracking-wider text-primary font-heading font-semibold">{label}</span>
+/** Interactive infrastructure visual for the results page */
+const InfraVisual = ({ data }: { data: CityData }) => {
+  const [activeInfra, setActiveInfra] = useState<string | null>(null);
+  const items = [
+    { key: "water", label: "Water Source", value: data.infrastructure.waterSource, emoji: "💧", color: "var(--infra-water)" },
+    { key: "power", label: "Power Grid", value: data.infrastructure.powerGrid, emoji: "⚡", color: "var(--infra-power)" },
+    { key: "transport", label: "Transport", value: data.infrastructure.transportNetwork, emoji: "🚇", color: "var(--secondary)" },
+    { key: "engineering", label: "Notable Engineering", value: data.infrastructure.notableEngineering, emoji: "🏗️", color: "var(--primary)" },
+  ];
+
+  return (
+    <div className="grid sm:grid-cols-2 gap-4">
+      {items.map((item, i) => (
+        <motion.button
+          key={item.key}
+          className={`glass-card p-5 text-left transition-all duration-300 ${activeInfra === item.key ? "ring-2 ring-primary" : "hover:border-primary/30"}`}
+          onClick={() => setActiveInfra(activeInfra === item.key ? null : item.key)}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 + i * 0.08 }}
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">{item.emoji}</span>
+            <span className="text-xs uppercase tracking-wider text-primary font-heading font-semibold">{item.label}</span>
+          </div>
+          <AnimatePresence mode="wait">
+            {activeInfra === item.key ? (
+              <motion.p key="full" className="text-sm text-foreground leading-relaxed"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {item.value}
+              </motion.p>
+            ) : (
+              <motion.p key="truncated" className="text-sm text-muted-foreground leading-relaxed line-clamp-2"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {item.value}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      ))}
     </div>
-    <p className="text-sm text-muted-foreground leading-relaxed">{value}</p>
-  </div>
-);
+  );
+};
 
 const NeighborhoodCarousel = ({ neighborhoods }: { neighborhoods: { name: string; character: string; era: string }[] }) => {
   const [current, setCurrent] = useState(0);
@@ -339,7 +569,7 @@ const NeighborhoodCarousel = ({ neighborhoods }: { neighborhoods: { name: string
                 <button
                   key={i}
                   onClick={() => setCurrent(i)}
-                  className={`w-2 h-2 rounded-full transition-colors ${i === current ? "bg-primary" : "bg-muted-foreground/30"}`}
+                  className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-primary w-6" : "bg-muted-foreground/30"}`}
                 />
               ))}
             </div>
