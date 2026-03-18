@@ -4,11 +4,42 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import CitySearch from "./CitySearch";
 import RecentSearches from "./RecentSearches";
+import { useMemo } from "react";
 
 interface Props {
   onSearch: (city: string) => void;
   isLoading: boolean;
 }
+
+/** Floating orb for ambient background effect */
+const FloatingOrb = ({ delay, x, y, size, color }: { delay: number; x: string; y: string; size: number; color: string }) => (
+  <motion.div
+    className="absolute rounded-full pointer-events-none"
+    style={{ left: x, top: y, width: size, height: size, background: color, filter: "blur(60px)" }}
+    animate={{ y: [0, -30, 0], x: [0, 15, 0], scale: [1, 1.15, 1], opacity: [0.3, 0.55, 0.3] }}
+    transition={{ duration: 8 + delay, repeat: Infinity, ease: "easeInOut", delay }}
+  />
+);
+
+/** Small floating particle */
+const Particle = ({ i }: { i: number }) => {
+  const props = useMemo(() => ({
+    left: `${10 + Math.random() * 80}%`,
+    top: `${20 + Math.random() * 60}%`,
+    size: 2 + Math.random() * 3,
+    delay: Math.random() * 5,
+    duration: 6 + Math.random() * 8,
+  }), [i]);
+
+  return (
+    <motion.div
+      className="absolute rounded-full bg-primary/40 pointer-events-none"
+      style={{ left: props.left, top: props.top, width: props.size, height: props.size }}
+      animate={{ y: [0, -60 - Math.random() * 40], opacity: [0, 0.8, 0] }}
+      transition={{ duration: props.duration, repeat: Infinity, delay: props.delay, ease: "easeOut" }}
+    />
+  );
+};
 
 const HeroSection = ({ onSearch, isLoading }: Props) => {
   const { user, subscription } = useAuth();
@@ -26,6 +57,20 @@ const HeroSection = ({ onSearch, isLoading }: Props) => {
   return (
     <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6">
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-card" />
+
+      {/* Ambient orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <FloatingOrb delay={0} x="10%" y="20%" size={300} color="hsl(38 95% 52% / 0.06)" />
+        <FloatingOrb delay={2} x="70%" y="15%" size={250} color="hsl(185 55% 38% / 0.05)" />
+        <FloatingOrb delay={4} x="50%" y="60%" size={200} color="hsl(270 65% 55% / 0.04)" />
+      </div>
+
+      {/* Particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <Particle key={i} i={i} />
+        ))}
+      </div>
 
       {/* Animated SVG city */}
       <div className="absolute bottom-0 left-0 right-0 h-[40vh] pointer-events-none opacity-60">
@@ -50,14 +95,37 @@ const HeroSection = ({ onSearch, isLoading }: Props) => {
           </motion.g>
           <motion.g custom={4} variants={layerVariants} initial="hidden" animate="visible">
             <rect x="600" y="150" width="50" height="175" rx="4" fill="hsl(var(--primary) / 0.25)" />
-            {[165, 195, 225, 255, 285].map((y) => (
+            {/* Windows with pulse */}
+            {[165, 195, 225, 255, 285].map((y, wi) => (
               <g key={y}>
-                <rect x="610" y={y} width="6" height="6" rx="1" fill="hsl(var(--primary) / 0.4)" />
-                <rect x="622" y={y} width="6" height="6" rx="1" fill="hsl(var(--primary) / 0.3)" />
-                <rect x="634" y={y} width="6" height="6" rx="1" fill="hsl(var(--primary) / 0.4)" />
+                <motion.rect x="610" y={y} width="6" height="6" rx="1" fill="hsl(var(--primary) / 0.4)"
+                  animate={{ opacity: [0.3, 0.8, 0.3] }}
+                  transition={{ duration: 3, repeat: Infinity, delay: wi * 0.5 }}
+                />
+                <motion.rect x="622" y={y} width="6" height="6" rx="1" fill="hsl(var(--primary) / 0.3)"
+                  animate={{ opacity: [0.2, 0.7, 0.2] }}
+                  transition={{ duration: 4, repeat: Infinity, delay: wi * 0.3 }}
+                />
+                <motion.rect x="634" y={y} width="6" height="6" rx="1" fill="hsl(var(--primary) / 0.4)"
+                  animate={{ opacity: [0.4, 0.9, 0.4] }}
+                  transition={{ duration: 2.5, repeat: Infinity, delay: wi * 0.7 }}
+                />
               </g>
             ))}
           </motion.g>
+          {/* Animated car */}
+          <motion.rect
+            x={0} y="328" width="18" height="8" rx="3"
+            fill="hsl(var(--primary) / 0.5)"
+            animate={{ x: [0, 1200] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.rect
+            x={800} y="330" width="14" height="7" rx="3"
+            fill="hsl(var(--secondary) / 0.4)"
+            animate={{ x: [800, -200] }}
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          />
         </svg>
       </div>
 
