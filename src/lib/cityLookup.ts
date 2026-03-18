@@ -35,6 +35,13 @@ export interface CityData {
   challenges: string;
 }
 
+export interface CityImages {
+  hero?: string;
+  landmark?: string;
+  street?: string;
+  aerial?: string;
+}
+
 export async function lookupCity(city: string): Promise<CityData> {
   const { data, error } = await supabase.functions.invoke("city-lookup", {
     body: { city },
@@ -45,4 +52,25 @@ export async function lookupCity(city: string): Promise<CityData> {
   if (!data?.success) throw new Error("Unexpected response");
 
   return data.data as CityData;
+}
+
+export async function generateCityImage(
+  cityName: string,
+  style: "hero" | "landmark" | "street" | "aerial"
+): Promise<string | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke("city-image", {
+      body: { cityName, style },
+    });
+
+    if (error || !data?.success) {
+      console.warn(`[city-image] Failed to generate ${style}:`, error?.message || data?.error);
+      return null;
+    }
+
+    return data.imageUrl;
+  } catch (err) {
+    console.warn(`[city-image] Error generating ${style}:`, err);
+    return null;
+  }
 }
