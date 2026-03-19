@@ -29,6 +29,7 @@ const Index = () => {
   const [cityData, setCityData] = useState<CityData | null>(null);
   const [cityImages, setCityImages] = useState<CityImages>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingCity, setLoadingCity] = useState("");
   const [showPaywall, setShowPaywall] = useState(false);
   const { toast } = useToast();
   const { user, profile, subscription, refreshProfile } = useAuth();
