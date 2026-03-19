@@ -208,18 +208,37 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
       {/* ── Parallax Hero ── */}
       <div ref={heroRef} className="relative min-h-[75vh] flex items-end overflow-hidden">
         <motion.div className="absolute inset-0" style={{ scale: heroScale }}>
-          {images.hero ? (
+          {/* Prefer AI hero for dramatic effect, fall back to first Unsplash photo */}
+          {images.aiHero ? (
             <motion.img
-              src={images.hero}
-              alt={`${data.cityName} skyline`}
+              src={images.aiHero}
+              alt={`${data.cityName} skyline — AI generated`}
+              width={1920} height={1080}
               className="w-full h-full object-cover cursor-pointer"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1.2 }}
-              onClick={() => setLightboxSrc(images.hero!)}
+              onClick={() => setLightboxSrc(images.aiHero!)}
+            />
+          ) : images.photos[0] ? (
+            <motion.img
+              src={images.photos[0].url}
+              alt={images.photos[0].alt}
+              width={1200} height={800}
+              className="w-full h-full object-cover cursor-pointer"
+              loading="eager"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.2 }}
+              onClick={() => setLightboxSrc(images.photos[0].url)}
             />
           ) : (
-            <Skeleton className="w-full h-full rounded-none" />
+            <div
+              className="w-full h-full"
+              style={{
+                background: `linear-gradient(135deg, hsl(var(--primary) / 0.3) 0%, hsl(var(--secondary) / 0.2) 100%)`,
+              }}
+            />
           )}
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/20" />
