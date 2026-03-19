@@ -584,7 +584,25 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 </div>
               </Section>
             </motion.div>
-          )}
+          ) : activeTab === "timeline" ? (
+            <motion.div key="timeline" className="space-y-8"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
+            >
+              <div className="text-center mb-8">
+                <h2 className="text-3xl md:text-4xl font-heading font-bold mb-2">
+                  <span className="text-gradient">{data.cityName}</span> Through Time
+                </h2>
+                <p className="text-muted-foreground text-sm max-w-lg mx-auto">
+                  Major milestones that shaped this city from its founding to the present day.
+                </p>
+              </div>
+              <MilestoneTimeline
+                milestones={data.milestones || []}
+                cityName={data.cityName}
+                loading={!data.milestones?.length}
+              />
+            </motion.div>
+          ) : null}
         </AnimatePresence>
 
         {/* Footer CTA */}
