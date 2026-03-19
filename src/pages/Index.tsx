@@ -27,7 +27,7 @@ const FREE_LOOKUP_LIMIT = 5;
 
 const Index = () => {
   const [cityData, setCityData] = useState<CityData | null>(null);
-  const [cityImages, setCityImages] = useState<CityImages>({});
+  const [cityImages, setCityImages] = useState<CityImages>({ photos: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingCity, setLoadingCity] = useState("");
   const [showPaywall, setShowPaywall] = useState(false);
