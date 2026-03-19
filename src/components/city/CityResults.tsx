@@ -498,7 +498,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
 
               {/* ── Street Scene Image ── */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                <CityImage src={images.street} alt={`${data.cityName} street scene`} aspectWide onZoom={setLightboxSrc} />
+                <CityImageComponent photo={images.photos[2] || null} cityName={data.cityName} alt={`${data.cityName} street scene`} aspectRatio="wide" className="rounded-xl" onClick={() => images.photos[2] && setLightboxSrc(images.photos[2].url)} showCredit />
                 <p className="text-center text-xs text-muted-foreground mt-3 font-heading uppercase tracking-wider">
                   Street life in {data.cityName}
                 </p>
