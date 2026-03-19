@@ -57,19 +57,20 @@ const Index = () => {
     setIsLoading(true);
     setLoadingCity(city);
     setCityData(null);
-    setCityImages({});
+    setCityImages({ photos: [] });
     try {
       const data = await lookupCity(city);
       setCityData(data);
       analytics.track({ name: "city_searched", properties: { city: data.cityName, state: data.state } });
 
-      // Generate images in parallel (non-blocking)
-      const imageStyles = ["hero", "landmark", "street", "aerial"] as const;
-      imageStyles.forEach(async (style) => {
-        const url = await generateCityImage(data.cityName, style);
-        if (url) {
-          setCityImages((prev) => ({ ...prev, [style]: url }));
-        }
+      // Fetch real Unsplash photos (non-blocking)
+      fetchCityPhotos(data.cityName, 6).then((photos) => {
+        setCityImages((prev) => ({ ...prev, photos }));
+      });
+
+      // Generate a single AI hero image for dramatic effect (non-blocking)
+      generateAIHeroImage(data.cityName).then((aiHero) => {
+        if (aiHero) setCityImages((prev) => ({ ...prev, aiHero }));
       });
 
       // Track search and increment usage for signed-in users
