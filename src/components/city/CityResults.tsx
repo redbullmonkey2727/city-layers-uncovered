@@ -2,9 +2,10 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { useState, useEffect, useRef } from "react";
 import type { CityData, CityImages } from "@/lib/cityLookup";
 import { Button } from "@/components/ui/button";
-import { Bookmark, ChevronLeft, ChevronRight, MapPin, Users, Calendar, Sparkles, ChevronDown, X, ZoomIn, Share2, TrendingUp, ThermometerSun, Footprints, DollarSign, ArrowUp } from "lucide-react";
+import { Bookmark, ChevronLeft, ChevronRight, MapPin, Users, Calendar, Sparkles, ChevronDown, X, ZoomIn, Share2, TrendingUp, ThermometerSun, Footprints, DollarSign, ArrowUp, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
+import MilestoneTimeline from "./MilestoneTimeline";
 
 interface Props {
   data: CityData;
