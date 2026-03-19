@@ -286,7 +286,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
       {/* ── Tab Navigation ── */}
       <div className="sticky top-14 z-30 bg-background/80 backdrop-blur-md border-b border-border/40">
         <div className="max-w-5xl mx-auto px-6 flex gap-1">
-          {(["overview", "deep-dive"] as const).map((tab) => (
+          {(["overview", "deep-dive", "timeline"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -296,7 +296,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {tab === "overview" ? "📊 Overview" : "🔍 Deep Dive"}
+              {tab === "overview" ? "📊 Overview" : tab === "deep-dive" ? "🔍 Deep Dive" : "🕰️ Timeline"}
             </button>
           ))}
         </div>
