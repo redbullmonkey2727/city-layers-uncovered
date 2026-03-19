@@ -138,34 +138,38 @@ const Index = () => {
     }
   };
 
-  if (cityData) {
-    return (
-      <div className="min-h-[100dvh] bg-background text-foreground pt-14">
-        <CityResults data={cityData} images={cityImages} onClear={handleClear} onSave={user ? handleSaveCity : undefined} />
-        <Footer />
-        <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground pt-14">
-      <ProgressNav />
-      <HeroSection onSearch={handleSearch} isLoading={isLoading} />
-      <BigIdea />
-      <WhyHere />
-      <CityPlanning />
-      <UndergroundInfra />
-      <DevelopmentPhase />
-      <ServicesScale />
-      <FundingFlow />
-      <GrowthTimeline />
-      <SystemsDashboard />
-      <CitySimulation />
-      <Takeaway />
-      <Footer />
-      <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
-    </div>
+    <>
+      <AnimatePresence>
+        {isLoading && <CityLoadingExperience cityName={loadingCity} />}
+      </AnimatePresence>
+
+      {cityData ? (
+        <div className="min-h-[100dvh] bg-background text-foreground pt-14">
+          <CityResults data={cityData} images={cityImages} onClear={handleClear} onSave={user ? handleSaveCity : undefined} />
+          <Footer />
+          <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
+        </div>
+      ) : (
+        <div className="min-h-[100dvh] bg-background text-foreground pt-14">
+          <ProgressNav />
+          <HeroSection onSearch={handleSearch} isLoading={isLoading} />
+          <BigIdea />
+          <WhyHere />
+          <CityPlanning />
+          <UndergroundInfra />
+          <DevelopmentPhase />
+          <ServicesScale />
+          <FundingFlow />
+          <GrowthTimeline />
+          <SystemsDashboard />
+          <CitySimulation />
+          <Takeaway />
+          <Footer />
+          <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
+        </div>
+      )}
+    </>
   );
 };
 
