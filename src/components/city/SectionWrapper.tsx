@@ -17,21 +17,21 @@ const SectionWrapper = ({ id, children, className = "", stage, title, subtitle }
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} id={id} className={`section-padding relative ${className}`}>
+    <section ref={ref} id={id} className={`section-padding relative ${className}`} aria-labelledby={title ? `${id}-heading` : undefined}>
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
         {(stage || title) && (
-          <div className="mb-12 max-w-3xl">
+          <div className="mb-10 md:mb-14 max-w-3xl">
             {stage && (
               <span className="inline-block mb-3 px-3 py-1 text-xs font-semibold tracking-widest uppercase rounded-full bg-primary/10 text-primary font-heading">
                 Stage {stage}
               </span>
             )}
-            {title && <h2 className="text-3xl md:text-5xl font-bold font-heading mb-4">{title}</h2>}
-            {subtitle && <p className="text-lg text-muted-foreground leading-relaxed">{subtitle}</p>}
+            {title && <h2 id={`${id}-heading`} className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-4 leading-tight">{title}</h2>}
+            {subtitle && <p className="text-base md:text-lg text-muted-foreground leading-relaxed">{subtitle}</p>}
           </div>
         )}
         {children}

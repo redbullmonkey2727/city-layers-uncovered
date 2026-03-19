@@ -68,12 +68,12 @@ const GrowthTimeline = () => {
         <svg viewBox="0 0 600 200" className="w-full" style={{ maxHeight: 280 }}>
           {/* Sky gradient */}
           <defs>
-            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="timeline-sky" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="hsl(220 20% 12%)" />
               <stop offset="100%" stopColor="hsl(220 18% 16%)" />
             </linearGradient>
           </defs>
-          <rect x="0" y="0" width="600" height={baseY} fill="url(#sky)" />
+          <rect x="0" y="0" width="600" height={baseY} fill="url(#timeline-sky)" />
 
           {/* Stars (visible in early eras) */}
           {eraIndex <= 1 && [50, 150, 300, 420, 530].map((sx, i) => (

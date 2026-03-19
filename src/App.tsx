@@ -30,24 +30,28 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          {/* Skip link for keyboard a11y */}
+          <a href="#main-content" className="skip-link">Skip to content</a>
           <Navbar />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/sign-in" element={<SignIn />} />
-            <Route path="/sign-up" element={<SignUp />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="/contact-sales" element={<ContactSales />} />
-            {/* Admin-only routes */}
-            <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
-            <Route path="/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
-            <Route path="/sales" element={<RequireAdmin><Sales /></RequireAdmin>} />
-            <Route path="/finance" element={<RequireAdmin><Finance /></RequireAdmin>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <main id="main-content">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/sign-in" element={<SignIn />} />
+              <Route path="/sign-up" element={<SignUp />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/contact-sales" element={<ContactSales />} />
+              {/* Admin-only routes */}
+              <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
+              <Route path="/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
+              <Route path="/sales" element={<RequireAdmin><Sales /></RequireAdmin>} />
+              <Route path="/finance" element={<RequireAdmin><Finance /></RequireAdmin>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

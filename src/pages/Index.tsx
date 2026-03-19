@@ -136,7 +136,7 @@ const Index = () => {
 
   if (cityData) {
     return (
-      <div className="min-h-screen bg-background text-foreground pt-14">
+      <div className="min-h-[100dvh] bg-background text-foreground pt-14">
         <CityResults data={cityData} images={cityImages} onClear={handleClear} onSave={user ? handleSaveCity : undefined} />
         <Footer />
         <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
@@ -145,7 +145,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pt-14">
+    <div className="min-h-[100dvh] bg-background text-foreground pt-14">
       <ProgressNav />
       <HeroSection onSearch={handleSearch} isLoading={isLoading} />
       <BigIdea />
