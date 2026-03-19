@@ -465,7 +465,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                       ))}
                     </div>
                   </div>
-                  <CityImage src={images.landmark} alt={`${data.cityName} landmark`} onZoom={setLightboxSrc} />
+                  <CityImageComponent photo={images.photos[1] || null} cityName={data.cityName} alt={`${data.cityName} landmark`} className="rounded-xl" onClick={() => images.photos[1] && setLightboxSrc(images.photos[1].url)} showCredit />
                 </div>
               </Section>
 
