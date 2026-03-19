@@ -101,7 +101,7 @@ const Index = () => {
 
   const handleClear = () => {
     setCityData(null);
-    setCityImages({});
+    setCityImages({ photos: [] });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
