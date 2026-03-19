@@ -383,32 +383,36 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 <h3 className="font-heading font-semibold text-sm mb-4 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
                   📷 City Views
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {(["hero", "landmark", "street", "aerial"] as const).map((key, i) => (
-                    <motion.div
-                      key={key}
-                      className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.3 + i * 0.1 }}
-                      onClick={() => images[key] && setLightboxSrc(images[key]!)}
-                    >
-                      {images[key] ? (
-                        <>
-                          <img src={images[key]} alt={`${data.cityName} ${key}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="text-[10px] font-heading uppercase tracking-wider text-foreground/90">{key}</span>
-                          </div>
-                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <ZoomIn className="w-3 h-3" />
-                          </div>
-                        </>
-                      ) : (
-                        <Skeleton className="w-full h-full" />
-                      )}
-                    </motion.div>
-                  ))}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {images.photos.length > 0 ? (
+                    images.photos.slice(0, 6).map((photo, i) => (
+                      <motion.div
+                        key={photo.id}
+                        className="relative rounded-xl overflow-hidden group cursor-pointer"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 + i * 0.08 }}
+                        onClick={() => setLightboxSrc(photo.url)}
+                      >
+                        <CityImageComponent
+                          photo={photo}
+                          cityName={data.cityName}
+                          aspectRatio="square"
+                          size="thumb"
+                          showCredit
+                          className="rounded-xl"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ZoomIn className="w-3 h-3" />
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    Array.from({ length: 6 }).map((_, i) => (
+                      <Skeleton key={i} className="aspect-square rounded-xl" />
+                    ))
+                  )}
                 </div>
               </div>
 
