@@ -6,6 +6,7 @@ import { Bookmark, ChevronLeft, ChevronRight, MapPin, Users, Calendar, Sparkles,
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import MilestoneTimeline from "./MilestoneTimeline";
+import CityImageComponent from "./CityImage";
 
 interface Props {
   data: CityData;
