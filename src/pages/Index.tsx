@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { lookupCity, generateCityImage, type CityData, type CityImages } from "@/lib/cityLookup";
 import { supabase } from "@/integrations/supabase/client";
 import { analytics } from "@/services/analytics";
+import CityLoadingExperience from "@/components/city/CityLoadingExperience";
 import HeroSection from "@/components/city/HeroSection";
 import CityResults from "@/components/city/CityResults";
 import BigIdea from "@/components/city/BigIdea";
