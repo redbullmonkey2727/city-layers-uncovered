@@ -2,9 +2,10 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { useState, useEffect, useRef } from "react";
 import type { CityData, CityImages } from "@/lib/cityLookup";
 import { Button } from "@/components/ui/button";
-import { Bookmark, ChevronLeft, ChevronRight, MapPin, Users, Calendar, Sparkles, ChevronDown, X, ZoomIn, Share2, TrendingUp, ThermometerSun, Footprints, DollarSign, ArrowUp } from "lucide-react";
+import { Bookmark, ChevronLeft, ChevronRight, MapPin, Users, Calendar, Sparkles, ChevronDown, X, ZoomIn, Share2, TrendingUp, ThermometerSun, Footprints, DollarSign, ArrowUp, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
+import MilestoneTimeline from "./MilestoneTimeline";
 
 interface Props {
   data: CityData;
@@ -157,7 +158,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
   const fadeIn = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [expandedTimeline, setExpandedTimeline] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "deep-dive">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "deep-dive" | "timeline">("overview");
   const { toast } = useToast();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
@@ -285,7 +286,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
       {/* ── Tab Navigation ── */}
       <div className="sticky top-14 z-30 bg-background/80 backdrop-blur-md border-b border-border/40">
         <div className="max-w-5xl mx-auto px-6 flex gap-1">
-          {(["overview", "deep-dive"] as const).map((tab) => (
+          {(["overview", "deep-dive", "timeline"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -295,7 +296,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {tab === "overview" ? "📊 Overview" : "🔍 Deep Dive"}
+              {tab === "overview" ? "📊 Overview" : tab === "deep-dive" ? "🔍 Deep Dive" : "🕰️ Timeline"}
             </button>
           ))}
         </div>
@@ -416,7 +417,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 </div>
               </Section>
             </motion.div>
-          ) : (
+          ) : activeTab === "deep-dive" ? (
             <motion.div key="deep-dive" className="space-y-16"
               initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
             >
@@ -583,7 +584,25 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 </div>
               </Section>
             </motion.div>
-          )}
+          ) : activeTab === "timeline" ? (
+            <motion.div key="timeline" className="space-y-8"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
+            >
+              <div className="text-center mb-8">
+                <h2 className="text-3xl md:text-4xl font-heading font-bold mb-2">
+                  <span className="text-gradient">{data.cityName}</span> Through Time
+                </h2>
+                <p className="text-muted-foreground text-sm max-w-lg mx-auto">
+                  Major milestones that shaped this city from its founding to the present day.
+                </p>
+              </div>
+              <MilestoneTimeline
+                milestones={data.milestones || []}
+                cityName={data.cityName}
+                loading={!data.milestones?.length}
+              />
+            </motion.div>
+          ) : null}
         </AnimatePresence>
 
         {/* Footer CTA */}

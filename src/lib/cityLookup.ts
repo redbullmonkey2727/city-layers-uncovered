@@ -1,5 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export interface CityMilestone {
+  year: string;
+  title: string;
+  description: string;
+  stat: string;
+  statLabel: string;
+  category: "infrastructure" | "population" | "government" | "commerce" | "culture" | "disaster";
+  mapDescription?: string;
+}
+
 export interface CityData {
   cityName: string;
   state: string;
@@ -33,6 +43,7 @@ export interface CityData {
   };
   funFacts: string[];
   challenges: string;
+  milestones?: CityMilestone[];
 }
 
 export interface CityImages {

@@ -60,8 +60,20 @@ serve(async (req) => {
     "periods": [{"era": "Period", "whatWasBuilt": "What was built", "whyItMatters": "Legacy"}]
   },
   "funFacts": ["3-5 surprising facts"],
-  "challenges": "Current challenges"
+  "challenges": "Current challenges",
+  "milestones": [
+    {
+      "year": "1803",
+      "title": "Short headline of the milestone",
+      "description": "2-3 sentences about this milestone event, what happened and its significance.",
+      "stat": "Population: 4,200",
+      "statLabel": "at time of event",
+      "category": "infrastructure|population|government|commerce|culture|disaster",
+      "mapDescription": "Brief note about city boundary at this time"
+    }
+  ]
 }
+Include 8-12 milestones spanning the city's full history from founding to modern day. Categories must be one of: infrastructure, population, government, commerce, culture, disaster. Each milestone must have a real stat/figure from that era.
 Be specific and factual. Use real names and dates.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
