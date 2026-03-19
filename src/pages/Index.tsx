@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { lookupCity, generateCityImage, type CityData, type CityImages } from "@/lib/cityLookup";
+import { lookupCity, fetchCityPhotos, generateAIHeroImage, type CityData, type CityImages } from "@/lib/cityLookup";
 import { supabase } from "@/integrations/supabase/client";
 import { analytics } from "@/services/analytics";
 import CityLoadingExperience from "@/components/city/CityLoadingExperience";
@@ -27,7 +27,7 @@ const FREE_LOOKUP_LIMIT = 5;
 
 const Index = () => {
   const [cityData, setCityData] = useState<CityData | null>(null);
-  const [cityImages, setCityImages] = useState<CityImages>({});
+  const [cityImages, setCityImages] = useState<CityImages>({ photos: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingCity, setLoadingCity] = useState("");
   const [showPaywall, setShowPaywall] = useState(false);
@@ -57,19 +57,20 @@ const Index = () => {
     setIsLoading(true);
     setLoadingCity(city);
     setCityData(null);
-    setCityImages({});
+    setCityImages({ photos: [] });
     try {
       const data = await lookupCity(city);
       setCityData(data);
       analytics.track({ name: "city_searched", properties: { city: data.cityName, state: data.state } });
 
-      // Generate images in parallel (non-blocking)
-      const imageStyles = ["hero", "landmark", "street", "aerial"] as const;
-      imageStyles.forEach(async (style) => {
-        const url = await generateCityImage(data.cityName, style);
-        if (url) {
-          setCityImages((prev) => ({ ...prev, [style]: url }));
-        }
+      // Fetch real Unsplash photos (non-blocking)
+      fetchCityPhotos(data.cityName, 6).then((photos) => {
+        setCityImages((prev) => ({ ...prev, photos }));
+      });
+
+      // Generate a single AI hero image for dramatic effect (non-blocking)
+      generateAIHeroImage(data.cityName).then((aiHero) => {
+        if (aiHero) setCityImages((prev) => ({ ...prev, aiHero }));
       });
 
       // Track search and increment usage for signed-in users
@@ -100,7 +101,7 @@ const Index = () => {
 
   const handleClear = () => {
     setCityData(null);
-    setCityImages({});
+    setCityImages({ photos: [] });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

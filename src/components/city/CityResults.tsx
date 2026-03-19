@@ -6,6 +6,7 @@ import { Bookmark, ChevronLeft, ChevronRight, MapPin, Users, Calendar, Sparkles,
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import MilestoneTimeline from "./MilestoneTimeline";
+import CityImageComponent from "./CityImage";
 
 interface Props {
   data: CityData;
@@ -207,18 +208,37 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
       {/* ── Parallax Hero ── */}
       <div ref={heroRef} className="relative min-h-[75vh] flex items-end overflow-hidden">
         <motion.div className="absolute inset-0" style={{ scale: heroScale }}>
-          {images.hero ? (
+          {/* Prefer AI hero for dramatic effect, fall back to first Unsplash photo */}
+          {images.aiHero ? (
             <motion.img
-              src={images.hero}
-              alt={`${data.cityName} skyline`}
+              src={images.aiHero}
+              alt={`${data.cityName} skyline — AI generated`}
+              width={1920} height={1080}
               className="w-full h-full object-cover cursor-pointer"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1.2 }}
-              onClick={() => setLightboxSrc(images.hero!)}
+              onClick={() => setLightboxSrc(images.aiHero!)}
+            />
+          ) : images.photos[0] ? (
+            <motion.img
+              src={images.photos[0].url}
+              alt={images.photos[0].alt}
+              width={1200} height={800}
+              className="w-full h-full object-cover cursor-pointer"
+              loading="eager"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.2 }}
+              onClick={() => setLightboxSrc(images.photos[0].url)}
             />
           ) : (
-            <Skeleton className="w-full h-full rounded-none" />
+            <div
+              className="w-full h-full"
+              style={{
+                background: `linear-gradient(135deg, hsl(var(--primary) / 0.3) 0%, hsl(var(--secondary) / 0.2) 100%)`,
+              }}
+            />
           )}
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/20" />
@@ -363,32 +383,36 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 <h3 className="font-heading font-semibold text-sm mb-4 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
                   📷 City Views
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {(["hero", "landmark", "street", "aerial"] as const).map((key, i) => (
-                    <motion.div
-                      key={key}
-                      className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.3 + i * 0.1 }}
-                      onClick={() => images[key] && setLightboxSrc(images[key]!)}
-                    >
-                      {images[key] ? (
-                        <>
-                          <img src={images[key]} alt={`${data.cityName} ${key}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="text-[10px] font-heading uppercase tracking-wider text-foreground/90">{key}</span>
-                          </div>
-                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <ZoomIn className="w-3 h-3" />
-                          </div>
-                        </>
-                      ) : (
-                        <Skeleton className="w-full h-full" />
-                      )}
-                    </motion.div>
-                  ))}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {images.photos.length > 0 ? (
+                    images.photos.slice(0, 6).map((photo, i) => (
+                      <motion.div
+                        key={photo.id}
+                        className="relative rounded-xl overflow-hidden group cursor-pointer"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 + i * 0.08 }}
+                        onClick={() => setLightboxSrc(photo.url)}
+                      >
+                        <CityImageComponent
+                          photo={photo}
+                          cityName={data.cityName}
+                          aspectRatio="square"
+                          size="thumb"
+                          showCredit
+                          className="rounded-xl"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ZoomIn className="w-3 h-3" />
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    Array.from({ length: 6 }).map((_, i) => (
+                      <Skeleton key={i} className="aspect-square rounded-xl" />
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -441,7 +465,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                       ))}
                     </div>
                   </div>
-                  <CityImage src={images.landmark} alt={`${data.cityName} landmark`} onZoom={setLightboxSrc} />
+                  <CityImageComponent photo={images.photos[1] || null} cityName={data.cityName} alt={`${data.cityName} landmark`} className="rounded-xl" onClick={() => images.photos[1] && setLightboxSrc(images.photos[1].url)} showCredit />
                 </div>
               </Section>
 
@@ -474,7 +498,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
 
               {/* ── Street Scene Image ── */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                <CityImage src={images.street} alt={`${data.cityName} street scene`} aspectWide onZoom={setLightboxSrc} />
+                <CityImageComponent photo={images.photos[2] || null} cityName={data.cityName} alt={`${data.cityName} street scene`} aspectRatio="wide" className="rounded-xl" onClick={() => images.photos[2] && setLightboxSrc(images.photos[2].url)} showCredit />
                 <p className="text-center text-xs text-muted-foreground mt-3 font-heading uppercase tracking-wider">
                   Street life in {data.cityName}
                 </p>
@@ -524,7 +548,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
 
               {/* ── Aerial Image ── */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                <CityImage src={images.aerial} alt={`${data.cityName} aerial view`} aspectWide onZoom={setLightboxSrc} />
+                <CityImageComponent photo={images.photos[3] || null} cityName={data.cityName} alt={`${data.cityName} aerial view`} aspectRatio="wide" className="rounded-xl" onClick={() => images.photos[3] && setLightboxSrc(images.photos[3].url)} showCredit />
                 <p className="text-center text-xs text-muted-foreground mt-3 font-heading uppercase tracking-wider">
                   Aerial view of {data.cityName}
                 </p>
@@ -635,32 +659,6 @@ const Section = ({ title, icon, delay, children }: { title: string; icon: string
   </motion.section>
 );
 
-const CityImage = ({ src, alt, aspectWide, onZoom }: { src?: string; alt: string; aspectWide?: boolean; onZoom?: (src: string) => void }) => (
-  <div className={`relative rounded-xl overflow-hidden group ${aspectWide ? "aspect-[21/9]" : "aspect-[4/3]"}`}>
-    {src ? (
-      <>
-        <motion.img
-          src={src}
-          alt={alt}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-        />
-        {onZoom && (
-          <button
-            onClick={() => onZoom(src)}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <ZoomIn className="w-4 h-4 text-foreground" />
-          </button>
-        )}
-      </>
-    ) : (
-      <Skeleton className="w-full h-full rounded-xl" />
-    )}
-  </div>
-);
 
 const InfraVisual = ({ data }: { data: CityData }) => {
   const [activeInfra, setActiveInfra] = useState<string | null>(null);

@@ -46,11 +46,22 @@ export interface CityData {
   milestones?: CityMilestone[];
 }
 
+export interface CityPhoto {
+  id: string;
+  url: string;
+  thumbUrl: string;
+  blurHash: string | null;
+  alt: string;
+  width: number;
+  height: number;
+  credit: { name: string; link: string };
+}
+
 export interface CityImages {
-  hero?: string;
-  landmark?: string;
-  street?: string;
-  aerial?: string;
+  /** Real photos from Unsplash */
+  photos: CityPhoto[];
+  /** AI-generated hero image (dramatic/conceptual) */
+  aiHero?: string;
 }
 
 export async function lookupCity(city: string): Promise<CityData> {
@@ -65,23 +76,40 @@ export async function lookupCity(city: string): Promise<CityData> {
   return data.data as CityData;
 }
 
-export async function generateCityImage(
-  cityName: string,
-  style: "hero" | "landmark" | "street" | "aerial"
-): Promise<string | null> {
+/** Fetch real city photos from Unsplash via edge function */
+export async function fetchCityPhotos(cityName: string, count = 6): Promise<CityPhoto[]> {
   try {
-    const { data, error } = await supabase.functions.invoke("city-image", {
-      body: { cityName, style },
+    const { data, error } = await supabase.functions.invoke("city-photos", {
+      body: { cityName, count },
     });
 
     if (error || !data?.success) {
-      console.warn(`[city-image] Failed to generate ${style}:`, error?.message || data?.error);
+      console.warn("[city-photos] Failed:", error?.message || data?.error);
+      return [];
+    }
+
+    return data.photos as CityPhoto[];
+  } catch (err) {
+    console.warn("[city-photos] Error:", err);
+    return [];
+  }
+}
+
+/** Generate a single AI hero image — used sparingly for dramatic/conceptual scenes */
+export async function generateAIHeroImage(cityName: string): Promise<string | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke("city-image", {
+      body: { cityName, style: "hero" },
+    });
+
+    if (error || !data?.success) {
+      console.warn("[city-image] AI hero failed:", error?.message || data?.error);
       return null;
     }
 
     return data.imageUrl;
   } catch (err) {
-    console.warn(`[city-image] Error generating ${style}:`, err);
+    console.warn("[city-image] Error:", err);
     return null;
   }
 }

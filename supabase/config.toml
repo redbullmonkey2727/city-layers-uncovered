@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.city-image]
 verify_jwt = false
+
+[functions.city-photos]
+verify_jwt = false
