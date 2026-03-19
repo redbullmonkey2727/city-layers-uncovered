@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { lookupCity, generateCityImage, type CityData, type CityImages } from "@/lib/cityLookup";
 import { supabase } from "@/integrations/supabase/client";
 import { analytics } from "@/services/analytics";
+import CityLoadingExperience from "@/components/city/CityLoadingExperience";
 import HeroSection from "@/components/city/HeroSection";
 import CityResults from "@/components/city/CityResults";
 import BigIdea from "@/components/city/BigIdea";
@@ -27,6 +29,7 @@ const Index = () => {
   const [cityData, setCityData] = useState<CityData | null>(null);
   const [cityImages, setCityImages] = useState<CityImages>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingCity, setLoadingCity] = useState("");
   const [showPaywall, setShowPaywall] = useState(false);
   const { toast } = useToast();
   const { user, profile, subscription, refreshProfile } = useAuth();
@@ -52,6 +55,7 @@ const Index = () => {
     }
 
     setIsLoading(true);
+    setLoadingCity(city);
     setCityData(null);
     setCityImages({});
     try {
@@ -134,34 +138,38 @@ const Index = () => {
     }
   };
 
-  if (cityData) {
-    return (
-      <div className="min-h-[100dvh] bg-background text-foreground pt-14">
-        <CityResults data={cityData} images={cityImages} onClear={handleClear} onSave={user ? handleSaveCity : undefined} />
-        <Footer />
-        <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground pt-14">
-      <ProgressNav />
-      <HeroSection onSearch={handleSearch} isLoading={isLoading} />
-      <BigIdea />
-      <WhyHere />
-      <CityPlanning />
-      <UndergroundInfra />
-      <DevelopmentPhase />
-      <ServicesScale />
-      <FundingFlow />
-      <GrowthTimeline />
-      <SystemsDashboard />
-      <CitySimulation />
-      <Takeaway />
-      <Footer />
-      <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
-    </div>
+    <>
+      <AnimatePresence>
+        {isLoading && <CityLoadingExperience cityName={loadingCity} />}
+      </AnimatePresence>
+
+      {cityData ? (
+        <div className="min-h-[100dvh] bg-background text-foreground pt-14">
+          <CityResults data={cityData} images={cityImages} onClear={handleClear} onSave={user ? handleSaveCity : undefined} />
+          <Footer />
+          <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
+        </div>
+      ) : (
+        <div className="min-h-[100dvh] bg-background text-foreground pt-14">
+          <ProgressNav />
+          <HeroSection onSearch={handleSearch} isLoading={isLoading} />
+          <BigIdea />
+          <WhyHere />
+          <CityPlanning />
+          <UndergroundInfra />
+          <DevelopmentPhase />
+          <ServicesScale />
+          <FundingFlow />
+          <GrowthTimeline />
+          <SystemsDashboard />
+          <CitySimulation />
+          <Takeaway />
+          <Footer />
+          <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
+        </div>
+      )}
+    </>
   );
 };
 
