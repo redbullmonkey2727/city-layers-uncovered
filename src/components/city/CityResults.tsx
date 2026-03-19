@@ -417,7 +417,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 </div>
               </Section>
             </motion.div>
-          ) : (
+          ) : activeTab === "deep-dive" ? (
             <motion.div key="deep-dive" className="space-y-16"
               initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
             >
