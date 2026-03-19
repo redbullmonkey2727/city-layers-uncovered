@@ -548,7 +548,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
 
               {/* ── Aerial Image ── */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                <CityImage src={images.aerial} alt={`${data.cityName} aerial view`} aspectWide onZoom={setLightboxSrc} />
+                <CityImageComponent photo={images.photos[3] || null} cityName={data.cityName} alt={`${data.cityName} aerial view`} aspectRatio="wide" className="rounded-xl" onClick={() => images.photos[3] && setLightboxSrc(images.photos[3].url)} showCredit />
                 <p className="text-center text-xs text-muted-foreground mt-3 font-heading uppercase tracking-wider">
                   Aerial view of {data.cityName}
                 </p>
