@@ -659,32 +659,6 @@ const Section = ({ title, icon, delay, children }: { title: string; icon: string
   </motion.section>
 );
 
-const CityImage = ({ src, alt, aspectWide, onZoom }: { src?: string; alt: string; aspectWide?: boolean; onZoom?: (src: string) => void }) => (
-  <div className={`relative rounded-xl overflow-hidden group ${aspectWide ? "aspect-[21/9]" : "aspect-[4/3]"}`}>
-    {src ? (
-      <>
-        <motion.img
-          src={src}
-          alt={alt}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-        />
-        {onZoom && (
-          <button
-            onClick={() => onZoom(src)}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <ZoomIn className="w-4 h-4 text-foreground" />
-          </button>
-        )}
-      </>
-    ) : (
-      <Skeleton className="w-full h-full rounded-xl" />
-    )}
-  </div>
-);
 
 const InfraVisual = ({ data }: { data: CityData }) => {
   const [activeInfra, setActiveInfra] = useState<string | null>(null);
