@@ -55,6 +55,7 @@ const Index = () => {
     }
 
     setIsLoading(true);
+    setLoadingCity(city);
     setCityData(null);
     setCityImages({});
     try {
