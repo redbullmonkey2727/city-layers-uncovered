@@ -148,6 +148,21 @@ const HeroSection = ({ onSearch, isLoading }: Props) => {
         >
           A road trip companion by Jonny Foote
         </motion.p>
+
+        {/* View counter */}
+        {viewCount !== null && (
+          <motion.div
+            className="flex items-center justify-center gap-1.5 mb-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.05, duration: 0.5 }}
+          >
+            <Badge variant="outline" className="text-[11px] font-heading gap-1.5 px-3 py-1 border-border/60 text-muted-foreground">
+              <Eye className="w-3 h-3" />
+              {viewCount.toLocaleString()} explorers have visited
+            </Badge>
+          </motion.div>
+        )}
         <motion.h1
           className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-heading font-bold leading-[1.05] mb-5"
           initial={{ opacity: 0, y: 30 }}
