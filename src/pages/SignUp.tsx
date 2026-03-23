@@ -10,7 +10,10 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
