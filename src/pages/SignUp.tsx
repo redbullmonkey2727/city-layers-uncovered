@@ -24,12 +24,28 @@ const SignUp = () => {
       toast({ title: "Password too short", description: "Must be at least 6 characters", variant: "destructive" });
       return;
     }
+    // Validate username
+    if (username.trim()) {
+      if (!/^[a-zA-Z0-9_]{3,30}$/.test(username)) {
+        setUsernameError("3-30 characters, letters, numbers, underscores only");
+        return;
+      }
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", username.toLowerCase())
+        .maybeSingle();
+      if (existing) {
+        setUsernameError("Username already taken");
+        return;
+      }
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: { full_name: fullName, username: username.toLowerCase().trim() || undefined },
         emailRedirectTo: window.location.origin,
       },
     });
