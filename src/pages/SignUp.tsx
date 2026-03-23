@@ -93,6 +93,22 @@ const SignUp = () => {
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
           />
+          <div className="space-y-1">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
+              <Input
+                placeholder="username"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""));
+                  setUsernameError("");
+                }}
+                className="pl-8"
+                maxLength={30}
+              />
+            </div>
+            {usernameError && <p className="text-xs text-destructive">{usernameError}</p>}
+          </div>
           <Input
             type="email"
             placeholder="Email"
