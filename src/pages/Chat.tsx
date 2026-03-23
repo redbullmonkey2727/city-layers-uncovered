@@ -195,15 +195,14 @@ const Chat = () => {
 
   const handleStartChat = async () => {
     if (!user || !friendEmail.trim()) return;
-    // Find user by email
-    const { data: friendProfile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", friendEmail.trim())
-      .maybeSingle();
+    // Search by username or email using the security definer function
+    const { data: results } = await supabase.rpc("search_users" as any, {
+      search_query: friendEmail.trim(),
+    });
 
+    const friendProfile = (results as any[])?.[0];
     if (!friendProfile) {
-      toast({ title: "User not found", description: "No account with that email.", variant: "destructive" });
+      toast({ title: "User not found", description: "No account with that username or email.", variant: "destructive" });
       return;
     }
     if (friendProfile.id === user.id) {
