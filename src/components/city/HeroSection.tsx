@@ -48,6 +48,13 @@ const Particle = ({ i }: { i: number }) => {
 const HeroSection = ({ onSearch, isLoading }: Props) => {
   const { user, subscription } = useAuth();
   const isPro = subscription.plan === "pro";
+  const [viewCount, setViewCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase.rpc("increment_page_view" as any, { page_path: "/" }).then(({ data }) => {
+      if (typeof data === "number") setViewCount(data);
+    });
+  }, []);
 
   const layerVariants = {
     hidden: { opacity: 0, y: 30 },
