@@ -377,7 +377,7 @@ const Chat = () => {
                   </p>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Enter their email address..."
+                      placeholder="Search by username or email..."
                       value={friendEmail}
                       onChange={(e) => setFriendEmail(e.target.value)}
                       className="font-heading text-sm"

@@ -101,9 +101,9 @@ const Navbar = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`font-heading text-sm gap-1.5 transition-colors ${isActive("/account") ? "text-foreground bg-muted" : ""}`}
+                  className={`font-heading text-sm gap-1.5 transition-colors ${isActive("/account") || isActive("/edit-profile") ? "text-foreground bg-muted" : ""}`}
                 >
-                  <User className="w-3.5 h-3.5" /> Account
+                  <User className="w-3.5 h-3.5" /> Profile
                 </Button>
               </Link>
               {isAdmin && adminLinks.map(({ to, label, icon: Icon }) => (
