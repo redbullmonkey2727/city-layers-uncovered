@@ -51,8 +51,9 @@ const HeroSection = ({ onSearch, isLoading }: Props) => {
   const [viewCount, setViewCount] = useState<number | null>(null);
 
   useEffect(() => {
-    supabase.rpc("increment_page_view" as any, { page_path: "/" }).then(({ data }) => {
-      if (typeof data === "number") setViewCount(data);
+    supabase.rpc("increment_page_view" as any, { page_path: "/" }).then(({ data, error }) => {
+      console.log("Page view result:", data, error);
+      if (data != null) setViewCount(Number(data));
     });
   }, []);
 
