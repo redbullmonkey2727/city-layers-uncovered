@@ -111,27 +111,43 @@ const Account = () => {
   return (
     <div className="min-h-screen bg-background pt-20 pb-0">
       <div className="max-w-4xl mx-auto px-6 space-y-8 pb-16">
-        {/* Header with greeting */}
+        {/* Header with profile */}
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-heading font-bold">
-              {isPro ? (
-                <>Welcome back, explorer <span className="text-gradient">✦</span></>
-              ) : (
-                "Your Account"
+          <div className="flex items-center gap-4">
+            <Avatar className="w-14 h-14 ring-2 ring-primary/20">
+              {profile.avatar_url ? (
+                <AvatarImage src={profile.avatar_url} alt={profile.username || "Profile"} />
+              ) : null}
+              <AvatarFallback className="text-lg font-heading font-bold bg-primary/10 text-primary">
+                {(profile.full_name || profile.username || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-heading font-bold">
+                {profile.full_name || profile.username || "Your Account"}
+              </h1>
+              {profile.username && (
+                <p className="text-sm text-muted-foreground">@{profile.username}</p>
               )}
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm">{profile.email}</p>
+              <p className="text-muted-foreground text-xs mt-0.5">{profile.email}</p>
+            </div>
           </div>
-          <Badge
-            className={`text-xs uppercase tracking-wider px-3 py-1.5 ${
-              isPro
-                ? "bg-primary/15 text-primary border-primary/30"
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {isPro ? "✦ Pro" : "Free Plan"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Link to="/edit-profile">
+              <Button variant="outline" size="sm" className="font-heading gap-1.5">
+                <Pencil className="w-3.5 h-3.5" /> Edit Profile
+              </Button>
+            </Link>
+            <Badge
+              className={`text-xs uppercase tracking-wider px-3 py-1.5 ${
+                isPro
+                  ? "bg-primary/15 text-primary border-primary/30"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {isPro ? "✦ Pro" : "Free Plan"}
+            </Badge>
+          </div>
         </div>
 
         {/* Upgrade banner for free users */}
