@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Zap, Menu, X, User, Sparkles, LifeBuoy, BarChart3,
   Settings, DollarSign, Phone, Shield,
+  Compass, Heart, Route, MessageCircle, Clock,
 } from "lucide-react";
 
 const Navbar = () => {
