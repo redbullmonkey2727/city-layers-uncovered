@@ -435,7 +435,7 @@ const Chat = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-heading font-semibold truncate">
-                        {other?.profile?.full_name || other?.profile?.email || "User"}
+                        {other?.profile?.full_name || other?.profile?.username || "User"}
                       </p>
                       {convo.lastMessage && (
                         <span className="text-[10px] text-muted-foreground flex-shrink-0">
