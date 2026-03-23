@@ -52,7 +52,7 @@ const HeroSection = ({ onSearch, isLoading }: Props) => {
 
   useEffect(() => {
     supabase.rpc("increment_page_view" as any, { page_path: "/" }).then(({ data }) => {
-      if (typeof data === "number") setViewCount(data);
+      if (data != null) setViewCount(Number(data));
     });
   }, []);
 
