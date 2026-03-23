@@ -54,8 +54,13 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const sub = subscriptions.data[0];
-      subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
-      cancelAtPeriodEnd = sub.cancel_at_period_end;
+      if (sub.current_period_end) {
+        const d = new Date(sub.current_period_end * 1000);
+        if (!isNaN(d.getTime())) {
+          subscriptionEnd = d.toISOString();
+        }
+      }
+      cancelAtPeriodEnd = sub.cancel_at_period_end ?? false;
 
       // Sync to profiles table
       await supabaseClient
