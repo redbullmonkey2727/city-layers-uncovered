@@ -101,36 +101,19 @@ const MilestoneCard = ({
             )}
           </div>
 
-          {/* Map placeholder */}
-          <div className="mt-4 rounded-lg overflow-hidden bg-muted/50 border border-border/30 aspect-[16/7] flex items-center justify-center relative">
-            <div className="absolute inset-0 opacity-30">
-              <svg viewBox="0 0 320 140" className="w-full h-full">
-                {/* Stylized mini map */}
-                <rect width="320" height="140" fill="hsl(var(--muted))" />
-                {/* Grid lines */}
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <line key={`h${i}`} x1="0" y1={i * 20} x2="320" y2={i * 20} stroke="hsl(var(--border))" strokeWidth="0.5" />
-                ))}
-                {Array.from({ length: 16 }).map((_, i) => (
-                  <line key={`v${i}`} x1={i * 22} y1="0" x2={i * 22} y2="140" stroke="hsl(var(--border))" strokeWidth="0.5" />
-                ))}
-                {/* City footprint blob - grows with index */}
-                <motion.ellipse
-                  cx="160"
-                  cy="70"
-                  fill="hsl(var(--primary) / 0.2)"
-                  stroke="hsl(var(--primary) / 0.5)"
-                  strokeWidth="1"
-                  initial={{ rx: 0, ry: 0 }}
-                  animate={isInView ? { rx: 20 + index * 8, ry: 15 + index * 5 } : {}}
-                  transition={{ duration: 1, delay: 0.3 }}
-                />
-                <circle cx="160" cy="70" r="3" fill="hsl(var(--primary))" />
-              </svg>
+          {/* Location card */}
+          <div className="mt-4 rounded-lg overflow-hidden border border-border/30 bg-gradient-to-br from-primary/5 to-muted/40 p-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-4 h-4 text-primary" />
             </div>
-            <span className="relative text-[10px] font-heading text-muted-foreground uppercase tracking-widest">
-              {milestone.mapDescription || `${milestone.year} city footprint`}
-            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-heading font-semibold text-foreground/80 leading-tight truncate">
+                {milestone.mapDescription || milestone.title}
+              </p>
+              <p className="text-[10px] text-muted-foreground font-heading mt-0.5">
+                {milestone.year} · {cat.label}
+              </p>
+            </div>
           </div>
         </button>
       </motion.div>
@@ -248,41 +231,32 @@ const MilestoneModal = ({ milestone, onClose }: { milestone: Milestone; onClose:
           </div>
         </div>
 
-        {/* Map placeholder expanded */}
-        <div className="rounded-xl overflow-hidden bg-muted/30 border border-border/30 aspect-[16/9] flex items-center justify-center relative">
-          <div className="absolute inset-0 opacity-25">
-            <svg viewBox="0 0 640 360" className="w-full h-full">
-              <rect width="640" height="360" fill="hsl(var(--muted))" />
-              {Array.from({ length: 18 }).map((_, i) => (
-                <line key={`h${i}`} x1="0" y1={i * 20} x2="640" y2={i * 20} stroke="hsl(var(--border))" strokeWidth="0.5" />
-              ))}
-              {Array.from({ length: 32 }).map((_, i) => (
-                <line key={`v${i}`} x1={i * 20} y1="0" x2={i * 20} y2="360" stroke="hsl(var(--border))" strokeWidth="0.5" />
-              ))}
-              {/* River */}
-              <path d="M 0 200 Q 160 160, 320 190 Q 480 220, 640 180" fill="none" stroke="hsl(var(--infra-water) / 0.4)" strokeWidth="8" />
-              {/* City area */}
-              <ellipse cx="320" cy="180" rx="120" ry="80" fill="hsl(var(--primary) / 0.15)" stroke="hsl(var(--primary) / 0.4)" strokeWidth="1.5" strokeDasharray="6 3" />
-              <circle cx="320" cy="180" r="5" fill="hsl(var(--primary))" />
-              <text x="320" y="175" textAnchor="middle" fill="hsl(var(--foreground) / 0.5)" fontSize="10" fontFamily="var(--font-heading)">
-                📍
-              </text>
-            </svg>
+        {/* Location detail */}
+        <div className="rounded-xl overflow-hidden border border-border/30 bg-gradient-to-br from-primary/5 via-muted/30 to-secondary/5 p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+            <MapPin className="w-6 h-6 text-primary" />
           </div>
-          <div className="relative text-center">
-            <p className="text-xs font-heading text-muted-foreground uppercase tracking-widest">
-              {milestone.mapDescription || "City boundary estimate"}
+          <div className="min-w-0">
+            <p className="text-sm font-heading font-bold text-foreground/90 leading-tight">
+              {milestone.mapDescription || milestone.title}
             </p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1">{milestone.year}</p>
+            <p className="text-xs text-muted-foreground font-heading mt-1">
+              {milestone.year} · {cat.label}
+            </p>
           </div>
         </div>
 
-        {/* Photo placeholder */}
-        <div className="mt-4 rounded-xl overflow-hidden bg-muted/20 border border-border/20 aspect-[16/9] flex items-center justify-center">
-          <div className="text-center">
-            <span className="text-3xl block mb-2">🏛️</span>
-            <p className="text-xs font-heading text-muted-foreground/50 uppercase tracking-widest">
-              Historical photo unavailable
+        {/* Historical context card */}
+        <div className="mt-4 rounded-xl overflow-hidden border border-border/20 bg-gradient-to-br from-muted/30 to-muted/10 p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-secondary/15 flex items-center justify-center flex-shrink-0">
+            {cat.icon ? <span className="scale-150" style={{ color: `hsl(${cat.color})` }}>{cat.icon}</span> : <Landmark className="w-6 h-6 text-muted-foreground/60" />}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-heading font-semibold text-foreground/80 leading-tight">
+              {milestone.title}
+            </p>
+            <p className="text-xs text-muted-foreground/60 font-heading mt-1">
+              Historical imagery · {milestone.year}
             </p>
           </div>
         </div>
