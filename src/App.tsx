@@ -49,6 +49,11 @@ const App = () => (
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/support" element={<Support />} />
               <Route path="/contact-sales" element={<ContactSales />} />
+              <Route path="/search-history" element={<SearchHistory />} />
+              <Route path="/explore" element={<Explore />} />
+              <Route path="/saved" element={<Saved />} />
+              <Route path="/trips" element={<TripPlanner />} />
+              <Route path="/chat" element={<Chat />} />
               {/* Admin-only routes */}
               <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
               <Route path="/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
