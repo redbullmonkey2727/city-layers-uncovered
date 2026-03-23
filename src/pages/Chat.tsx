@@ -25,7 +25,7 @@ interface Conversation {
 interface Participant {
   user_id: string;
   last_read_at: string | null;
-  profile?: { email: string | null; full_name: string | null };
+  profile?: { email: string | null; full_name: string | null; username: string | null; avatar_url: string | null };
 }
 
 interface ChatMessage {
