@@ -101,36 +101,19 @@ const MilestoneCard = ({
             )}
           </div>
 
-          {/* Map placeholder */}
-          <div className="mt-4 rounded-lg overflow-hidden bg-muted/50 border border-border/30 aspect-[16/7] flex items-center justify-center relative">
-            <div className="absolute inset-0 opacity-30">
-              <svg viewBox="0 0 320 140" className="w-full h-full">
-                {/* Stylized mini map */}
-                <rect width="320" height="140" fill="hsl(var(--muted))" />
-                {/* Grid lines */}
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <line key={`h${i}`} x1="0" y1={i * 20} x2="320" y2={i * 20} stroke="hsl(var(--border))" strokeWidth="0.5" />
-                ))}
-                {Array.from({ length: 16 }).map((_, i) => (
-                  <line key={`v${i}`} x1={i * 22} y1="0" x2={i * 22} y2="140" stroke="hsl(var(--border))" strokeWidth="0.5" />
-                ))}
-                {/* City footprint blob - grows with index */}
-                <motion.ellipse
-                  cx="160"
-                  cy="70"
-                  fill="hsl(var(--primary) / 0.2)"
-                  stroke="hsl(var(--primary) / 0.5)"
-                  strokeWidth="1"
-                  initial={{ rx: 0, ry: 0 }}
-                  animate={isInView ? { rx: 20 + index * 8, ry: 15 + index * 5 } : {}}
-                  transition={{ duration: 1, delay: 0.3 }}
-                />
-                <circle cx="160" cy="70" r="3" fill="hsl(var(--primary))" />
-              </svg>
+          {/* Location card */}
+          <div className="mt-4 rounded-lg overflow-hidden border border-border/30 bg-gradient-to-br from-primary/5 to-muted/40 p-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-4 h-4 text-primary" />
             </div>
-            <span className="relative text-[10px] font-heading text-muted-foreground uppercase tracking-widest">
-              {milestone.mapDescription || `${milestone.year} city footprint`}
-            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-heading font-semibold text-foreground/80 leading-tight truncate">
+                {milestone.mapDescription || milestone.title}
+              </p>
+              <p className="text-[10px] text-muted-foreground font-heading mt-0.5">
+                {milestone.year} · {cat.label}
+              </p>
+            </div>
           </div>
         </button>
       </motion.div>
