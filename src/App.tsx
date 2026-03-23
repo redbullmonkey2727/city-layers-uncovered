@@ -56,6 +56,8 @@ const App = () => (
               <Route path="/saved" element={<Saved />} />
               <Route path="/trips" element={<TripPlanner />} />
               <Route path="/chat" element={<Chat />} />
+              <Route path="/u/:username" element={<Profile />} />
+              <Route path="/edit-profile" element={<EditProfile />} />
               {/* Admin-only routes */}
               <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
               <Route path="/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
