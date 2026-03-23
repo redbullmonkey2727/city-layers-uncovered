@@ -97,7 +97,7 @@ const Chat = () => {
         for (const p of parts) {
           const { data: prof } = await supabase
             .from("profiles")
-            .select("email, full_name")
+            .select("email, full_name, username, avatar_url")
             .eq("id", p.user_id)
             .maybeSingle();
           participants.push({ ...p, profile: prof || undefined });
