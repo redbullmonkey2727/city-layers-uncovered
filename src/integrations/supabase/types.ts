@@ -677,6 +677,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           created_at: string
           email: string | null
           full_name: string | null
@@ -685,8 +687,11 @@ export type Database = {
           monthly_lookup_count: number
           plan: string
           stripe_customer_id: string | null
+          username: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -695,8 +700,11 @@ export type Database = {
           monthly_lookup_count?: number
           plan?: string
           stripe_customer_id?: string | null
+          username?: string | null
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -705,6 +713,7 @@ export type Database = {
           monthly_lookup_count?: number
           plan?: string
           stripe_customer_id?: string | null
+          username?: string | null
         }
         Relationships: []
       }
@@ -1029,6 +1038,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      search_users: {
+        Args: { search_query: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+          username: string
+        }[]
       }
     }
     Enums: {
