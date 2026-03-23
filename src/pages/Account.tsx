@@ -5,11 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/Footer";
 import {
   Loader2, MapPin, Search, CreditCard, Zap, Crown,
-  CheckCircle2, Lock, Infinity, BookmarkPlus, BarChart3, Headphones,
+  CheckCircle2, Lock, Infinity, BookmarkPlus, BarChart3, Headphones, Pencil,
 } from "lucide-react";
 
 const FREE_LOOKUP_LIMIT = 5;
