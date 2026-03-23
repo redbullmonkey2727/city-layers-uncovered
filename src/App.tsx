@@ -24,6 +24,8 @@ import Explore from "./pages/Explore.tsx";
 import Saved from "./pages/Saved.tsx";
 import TripPlanner from "./pages/TripPlanner.tsx";
 import Chat from "./pages/Chat.tsx";
+import Profile from "./pages/Profile.tsx";
+import EditProfile from "./pages/EditProfile.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
