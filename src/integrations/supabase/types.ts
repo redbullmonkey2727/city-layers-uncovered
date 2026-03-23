@@ -198,6 +198,97 @@ export type Database = {
           },
         ]
       }
+      chat_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          content: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+          shared_content_id: string | null
+          shared_content_preview: Json | null
+          shared_content_type: string | null
+        }
+        Insert: {
+          content?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+          shared_content_id?: string | null
+          shared_content_preview?: Json | null
+          shared_content_type?: string | null
+        }
+        Update: {
+          content?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+          shared_content_id?: string | null
+          shared_content_preview?: Json | null
+          shared_content_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_participants: {
+        Row: {
+          conversation_id: string
+          id: string
+          joined_at: string
+          last_read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_sync_log: {
         Row: {
           created_at: string
@@ -367,6 +458,30 @@ export type Database = {
           },
         ]
       }
+      likes: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notification_log: {
         Row: {
           channel: string
@@ -508,6 +623,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      places: {
+        Row: {
+          address: string | null
+          category: string
+          city_name: string
+          created_at: string
+          description: string | null
+          featured: boolean | null
+          hours: string | null
+          id: string
+          name: string
+          photo_url: string | null
+          rating: number | null
+          state_region: string | null
+          tips: string | null
+          website_url: string | null
+        }
+        Insert: {
+          address?: string | null
+          category?: string
+          city_name: string
+          created_at?: string
+          description?: string | null
+          featured?: boolean | null
+          hours?: string | null
+          id?: string
+          name: string
+          photo_url?: string | null
+          rating?: number | null
+          state_region?: string | null
+          tips?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          city_name?: string
+          created_at?: string
+          description?: string | null
+          featured?: boolean | null
+          hours?: string | null
+          id?: string
+          name?: string
+          photo_url?: string | null
+          rating?: number | null
+          state_region?: string | null
+          tips?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -809,6 +975,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_friends: {
+        Row: {
+          created_at: string
+          friend_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

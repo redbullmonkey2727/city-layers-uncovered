@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Zap, Menu, X, User, Sparkles, LifeBuoy, BarChart3,
   Settings, DollarSign, Phone, Shield,
+  Compass, Heart, Route, MessageCircle, Clock,
 } from "lucide-react";
 
 const Navbar = () => {
@@ -60,13 +61,40 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-1">
           {loading ? null : user ? (
             <>
-              <Link to="/pricing">
+              <Link to="/explore">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`font-heading text-sm gap-1.5 transition-colors ${isActive("/pricing") ? "text-primary bg-primary/10" : "text-primary hover:text-primary hover:bg-primary/10"}`}
+                  className={`font-heading text-sm gap-1.5 transition-colors ${isActive("/explore") ? "text-foreground bg-muted" : ""}`}
                 >
-                  <Sparkles className="w-3.5 h-3.5" /> Pricing
+                  <Compass className="w-3.5 h-3.5" /> Explore
+                </Button>
+              </Link>
+              <Link to="/trips">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`font-heading text-sm gap-1.5 transition-colors ${isActive("/trips") ? "text-foreground bg-muted" : ""}`}
+                >
+                  <Route className="w-3.5 h-3.5" /> Trips
+                </Button>
+              </Link>
+              <Link to="/saved">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`font-heading text-sm gap-1.5 transition-colors ${isActive("/saved") ? "text-foreground bg-muted" : ""}`}
+                >
+                  <Heart className="w-3.5 h-3.5" /> Saved
+                </Button>
+              </Link>
+              <Link to="/chat">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`font-heading text-sm gap-1.5 transition-colors ${isActive("/chat") ? "text-foreground bg-muted" : ""}`}
+                >
+                  <MessageCircle className="w-3.5 h-3.5" /> Chat
                 </Button>
               </Link>
               <Link to="/account">
@@ -161,6 +189,11 @@ const Navbar = () => {
             {loading ? null : user ? (
               <>
                 {[
+                  { to: "/explore", label: "Explore", icon: Compass },
+                  { to: "/trips", label: "Trip Planner", icon: Route },
+                  { to: "/saved", label: "Saved", icon: Heart },
+                  { to: "/chat", label: "Messages", icon: MessageCircle },
+                  { to: "/search-history", label: "Search History", icon: Clock },
                   { to: "/account", label: "Account", icon: User },
                   { to: "/support", label: "Support", icon: LifeBuoy },
                   { to: "/pricing", label: "Pricing", icon: Sparkles },
