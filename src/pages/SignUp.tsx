@@ -14,7 +14,6 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [usernameError, setUsernameError] = useState("");
-  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
