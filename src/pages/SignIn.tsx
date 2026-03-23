@@ -16,8 +16,7 @@ const SignIn = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Map shorthand "admin" to the real admin email
-    const loginEmail = email.trim().toLowerCase() === "admin" ? "admin@citylayers.com" : email;
+    const loginEmail = email.trim();
 
     const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
     setLoading(false);
