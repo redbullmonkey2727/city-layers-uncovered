@@ -2,9 +2,11 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 import CitySearch from "./CitySearch";
 import RecentSearches from "./RecentSearches";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
+import { Eye } from "lucide-react";
 
 interface Props {
   onSearch: (city: string) => void;
