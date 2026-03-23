@@ -24,6 +24,8 @@ import Explore from "./pages/Explore.tsx";
 import Saved from "./pages/Saved.tsx";
 import TripPlanner from "./pages/TripPlanner.tsx";
 import Chat from "./pages/Chat.tsx";
+import Profile from "./pages/Profile.tsx";
+import EditProfile from "./pages/EditProfile.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -54,6 +56,8 @@ const App = () => (
               <Route path="/saved" element={<Saved />} />
               <Route path="/trips" element={<TripPlanner />} />
               <Route path="/chat" element={<Chat />} />
+              <Route path="/u/:username" element={<Profile />} />
+              <Route path="/edit-profile" element={<EditProfile />} />
               {/* Admin-only routes */}
               <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
               <Route path="/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />

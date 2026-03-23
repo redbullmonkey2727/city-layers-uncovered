@@ -10,8 +10,10 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -21,12 +23,28 @@ const SignUp = () => {
       toast({ title: "Password too short", description: "Must be at least 6 characters", variant: "destructive" });
       return;
     }
+    // Validate username
+    if (username.trim()) {
+      if (!/^[a-zA-Z0-9_]{3,30}$/.test(username)) {
+        setUsernameError("3-30 characters, letters, numbers, underscores only");
+        return;
+      }
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", username.toLowerCase())
+        .maybeSingle();
+      if (existing) {
+        setUsernameError("Username already taken");
+        return;
+      }
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: { full_name: fullName, username: username.toLowerCase().trim() || undefined },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -74,6 +92,22 @@ const SignUp = () => {
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
           />
+          <div className="space-y-1">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
+              <Input
+                placeholder="username"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""));
+                  setUsernameError("");
+                }}
+                className="pl-8"
+                maxLength={30}
+              />
+            </div>
+            {usernameError && <p className="text-xs text-destructive">{usernameError}</p>}
+          </div>
           <Input
             type="email"
             placeholder="Email"

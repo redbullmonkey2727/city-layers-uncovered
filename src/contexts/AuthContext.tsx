@@ -9,6 +9,9 @@ interface Profile {
   id: string;
   email: string | null;
   full_name: string | null;
+  username: string | null;
+  bio: string | null;
+  avatar_url: string | null;
   plan: string;
   monthly_lookup_count: number;
   lookup_reset_at: string | null;

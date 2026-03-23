@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -25,7 +26,7 @@ interface Conversation {
 interface Participant {
   user_id: string;
   last_read_at: string | null;
-  profile?: { email: string | null; full_name: string | null };
+  profile?: { email: string | null; full_name: string | null; username: string | null; avatar_url: string | null };
 }
 
 interface ChatMessage {
@@ -97,7 +98,7 @@ const Chat = () => {
         for (const p of parts) {
           const { data: prof } = await supabase
             .from("profiles")
-            .select("email, full_name")
+            .select("email, full_name, username, avatar_url")
             .eq("id", p.user_id)
             .maybeSingle();
           participants.push({ ...p, profile: prof || undefined });
@@ -195,15 +196,14 @@ const Chat = () => {
 
   const handleStartChat = async () => {
     if (!user || !friendEmail.trim()) return;
-    // Find user by email
-    const { data: friendProfile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", friendEmail.trim())
-      .maybeSingle();
+    // Search by username or email using the security definer function
+    const { data: results } = await supabase.rpc("search_users" as any, {
+      search_query: friendEmail.trim(),
+    });
 
+    const friendProfile = (results as any[])?.[0];
     if (!friendProfile) {
-      toast({ title: "User not found", description: "No account with that email.", variant: "destructive" });
+      toast({ title: "User not found", description: "No account with that username or email.", variant: "destructive" });
       return;
     }
     if (friendProfile.id === user.id) {
@@ -259,14 +259,21 @@ const Chat = () => {
           <Button variant="ghost" size="sm" className="p-2" onClick={() => setActiveConvo(null)}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <Users className="w-4 h-4 text-primary" />
-          </div>
+          <Avatar className="w-8 h-8">
+            {other?.profile?.avatar_url ? (
+              <AvatarImage src={other.profile.avatar_url} alt={other.profile.username || "User"} />
+            ) : null}
+            <AvatarFallback className="text-xs font-heading bg-primary/10 text-primary">
+              {(other?.profile?.full_name || other?.profile?.username || "?")[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <p className="text-sm font-heading font-semibold">
-              {other?.profile?.full_name || other?.profile?.email || "User"}
+              {other?.profile?.full_name || other?.profile?.username || "User"}
             </p>
-            <p className="text-[11px] text-muted-foreground">Direct message</p>
+            <p className="text-[11px] text-muted-foreground">
+              {other?.profile?.username ? `@${other.profile.username}` : "Direct message"}
+            </p>
           </div>
         </div>
 
@@ -378,7 +385,7 @@ const Chat = () => {
                   </p>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Enter their email address..."
+                      placeholder="Search by username or email..."
                       value={friendEmail}
                       onChange={(e) => setFriendEmail(e.target.value)}
                       className="font-heading text-sm"
@@ -417,13 +424,18 @@ const Chat = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Users className="w-5 h-5 text-primary" />
-                  </div>
+                  <Avatar className="w-10 h-10 flex-shrink-0">
+                    {other?.profile?.avatar_url ? (
+                      <AvatarImage src={other.profile.avatar_url} alt={other.profile.username || "User"} />
+                    ) : null}
+                    <AvatarFallback className="text-sm font-heading bg-primary/10 text-primary">
+                      {(other?.profile?.full_name || other?.profile?.username || "?")[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-heading font-semibold truncate">
-                        {other?.profile?.full_name || other?.profile?.email || "User"}
+                        {other?.profile?.full_name || other?.profile?.username || "User"}
                       </p>
                       {convo.lastMessage && (
                         <span className="text-[10px] text-muted-foreground flex-shrink-0">
