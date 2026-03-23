@@ -259,14 +259,21 @@ const Chat = () => {
           <Button variant="ghost" size="sm" className="p-2" onClick={() => setActiveConvo(null)}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <Users className="w-4 h-4 text-primary" />
-          </div>
+          <Avatar className="w-8 h-8">
+            {other?.profile?.avatar_url ? (
+              <AvatarImage src={other.profile.avatar_url} alt={other.profile.username || "User"} />
+            ) : null}
+            <AvatarFallback className="text-xs font-heading bg-primary/10 text-primary">
+              {(other?.profile?.full_name || other?.profile?.username || "?")[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <p className="text-sm font-heading font-semibold">
-              {other?.profile?.full_name || other?.profile?.email || "User"}
+              {other?.profile?.full_name || other?.profile?.username || "User"}
             </p>
-            <p className="text-[11px] text-muted-foreground">Direct message</p>
+            <p className="text-[11px] text-muted-foreground">
+              {other?.profile?.username ? `@${other.profile.username}` : "Direct message"}
+            </p>
           </div>
         </div>
 
