@@ -624,6 +624,24 @@ export type Database = {
           },
         ]
       }
+      page_views: {
+        Row: {
+          count: number
+          id: string
+          page: string
+        }
+        Insert: {
+          count?: number
+          id?: string
+          page?: string
+        }
+        Update: {
+          count?: number
+          id?: string
+          page?: string
+        }
+        Relationships: []
+      }
       places: {
         Row: {
           address: string | null
@@ -1039,6 +1057,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_page_view: { Args: { page_path: string }; Returns: number }
       search_users: {
         Args: { search_query: string }
         Returns: {

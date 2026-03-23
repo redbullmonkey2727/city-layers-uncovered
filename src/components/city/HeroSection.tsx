@@ -2,9 +2,11 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 import CitySearch from "./CitySearch";
 import RecentSearches from "./RecentSearches";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
+import { Eye } from "lucide-react";
 
 interface Props {
   onSearch: (city: string) => void;
@@ -46,6 +48,13 @@ const Particle = ({ i }: { i: number }) => {
 const HeroSection = ({ onSearch, isLoading }: Props) => {
   const { user, subscription } = useAuth();
   const isPro = subscription.plan === "pro";
+  const [viewCount, setViewCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase.rpc("increment_page_view" as any, { page_path: "/" }).then(({ data }) => {
+      if (typeof data === "number") setViewCount(data);
+    });
+  }, []);
 
   const layerVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -139,6 +148,21 @@ const HeroSection = ({ onSearch, isLoading }: Props) => {
         >
           A road trip companion by Jonny Foote
         </motion.p>
+
+        {/* View counter */}
+        {viewCount !== null && (
+          <motion.div
+            className="flex items-center justify-center gap-1.5 mb-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.05, duration: 0.5 }}
+          >
+            <Badge variant="outline" className="text-[11px] font-heading gap-1.5 px-3 py-1 border-border/60 text-muted-foreground">
+              <Eye className="w-3 h-3" />
+              {viewCount.toLocaleString()} explorers have visited
+            </Badge>
+          </motion.div>
+        )}
         <motion.h1
           className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-heading font-bold leading-[1.05] mb-5"
           initial={{ opacity: 0, y: 30 }}
