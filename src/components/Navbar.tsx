@@ -189,6 +189,11 @@ const Navbar = () => {
             {loading ? null : user ? (
               <>
                 {[
+                  { to: "/explore", label: "Explore", icon: Compass },
+                  { to: "/trips", label: "Trip Planner", icon: Route },
+                  { to: "/saved", label: "Saved", icon: Heart },
+                  { to: "/chat", label: "Messages", icon: MessageCircle },
+                  { to: "/search-history", label: "Search History", icon: Clock },
                   { to: "/account", label: "Account", icon: User },
                   { to: "/support", label: "Support", icon: LifeBuoy },
                   { to: "/pricing", label: "Pricing", icon: Sparkles },
