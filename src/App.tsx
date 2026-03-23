@@ -19,6 +19,11 @@ import Settings from "./pages/Settings.tsx";
 import Sales from "./pages/Sales.tsx";
 import ContactSales from "./pages/ContactSales.tsx";
 import Finance from "./pages/Finance.tsx";
+import SearchHistory from "./pages/SearchHistory.tsx";
+import Explore from "./pages/Explore.tsx";
+import Saved from "./pages/Saved.tsx";
+import TripPlanner from "./pages/TripPlanner.tsx";
+import Chat from "./pages/Chat.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
