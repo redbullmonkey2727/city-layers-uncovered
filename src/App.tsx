@@ -75,11 +75,14 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          {/* Skip link for keyboard a11y */}
-          <a href="#main-content" className="skip-link">Skip to content</a>
-          <Navbar />
-          <main id="main-content">
-            <Routes>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;
               <Route path="/" element={<Index />} />
               <Route path="/city/:slug" element={<City />} />
               <Route path="/sign-in" element={<SignIn />} />
