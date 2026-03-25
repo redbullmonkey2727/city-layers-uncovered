@@ -178,10 +178,9 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile dropdown overlay */}
-      {mobileOpen && (
+      {mobileOpen && createPortal(
         <div
-          className="md:hidden fixed inset-x-0 top-14 bottom-0 bg-background z-[999] overflow-y-auto border-t border-border"
+          className="md:hidden fixed inset-x-0 top-14 bottom-0 bg-background z-[9999] overflow-y-auto border-t border-border"
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"
@@ -249,7 +248,8 @@ const Navbar = () => {
               </>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </nav>
   );
