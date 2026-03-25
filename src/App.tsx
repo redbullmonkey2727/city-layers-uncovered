@@ -83,34 +83,3 @@ const App = () => (
 );
 
 export default App;
-              <Route path="/city/:slug" element={<City />} />
-              <Route path="/sign-in" element={<SignIn />} />
-              <Route path="/sign-up" element={<SignUp />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/contact-sales" element={<ContactSales />} />
-              <Route path="/search-history" element={<SearchHistory />} />
-              <Route path="/explore" element={<Explore />} />
-              <Route path="/saved" element={<Saved />} />
-              <Route path="/trips" element={<TripPlanner />} />
-              <Route path="/chat" element={<Chat />} />
-              <Route path="/u/:username" element={<Profile />} />
-              <Route path="/edit-profile" element={<EditProfile />} />
-              {/* Admin-only routes */}
-              <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
-              <Route path="/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
-              <Route path="/sales" element={<RequireAdmin><Sales /></RequireAdmin>} />
-              <Route path="/finance" element={<RequireAdmin><Finance /></RequireAdmin>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
-
-export default App;
