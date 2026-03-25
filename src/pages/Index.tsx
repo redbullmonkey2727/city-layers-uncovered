@@ -1,13 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { lookupCity, fetchCityPhotos, generateAIHeroImage, type CityData, type CityImages } from "@/lib/cityLookup";
 import { supabase } from "@/integrations/supabase/client";
 import { analytics } from "@/services/analytics";
+import { toCitySlug } from "@/lib/citySlug";
 import CityLoadingExperience from "@/components/city/CityLoadingExperience";
 import HeroSection from "@/components/city/HeroSection";
-import CityResults from "@/components/city/CityResults";
 import BigIdea from "@/components/city/BigIdea";
 import WhyHere from "@/components/city/WhyHere";
 import CityPlanning from "@/components/city/CityPlanning";
@@ -20,19 +21,19 @@ import SystemsDashboard from "@/components/city/SystemsDashboard";
 import CitySimulation from "@/components/city/CitySimulation";
 import Takeaway from "@/components/city/Takeaway";
 import ProgressNav from "@/components/city/ProgressNav";
+import SocialProof from "@/components/city/SocialProof";
 import PaywallModal from "@/components/PaywallModal";
 import Footer from "@/components/Footer";
 
 const FREE_LOOKUP_LIMIT = 5;
 
 const Index = () => {
-  const [cityData, setCityData] = useState<CityData | null>(null);
-  const [cityImages, setCityImages] = useState<CityImages>({ photos: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingCity, setLoadingCity] = useState("");
   const [showPaywall, setShowPaywall] = useState(false);
   const { toast } = useToast();
   const { user, profile, subscription, refreshProfile } = useAuth();
+  const navigate = useNavigate();
 
   const handleSearch = async (city: string) => {
     // Usage enforcement for free users
@@ -56,22 +57,10 @@ const Index = () => {
 
     setIsLoading(true);
     setLoadingCity(city);
-    setCityData(null);
-    setCityImages({ photos: [] });
+
     try {
       const data = await lookupCity(city);
-      setCityData(data);
       analytics.track({ name: "city_searched", properties: { city: data.cityName, state: data.state } });
-
-      // Fetch real Unsplash photos (non-blocking)
-      fetchCityPhotos(data.cityName, 6).then((photos) => {
-        setCityImages((prev) => ({ ...prev, photos }));
-      });
-
-      // Generate a single AI hero image for dramatic effect (non-blocking)
-      generateAIHeroImage(data.cityName).then((aiHero) => {
-        if (aiHero) setCityImages((prev) => ({ ...prev, aiHero }));
-      });
 
       // Track search and increment usage for signed-in users
       if (user) {
@@ -82,7 +71,6 @@ const Index = () => {
           state_region: data.state,
           generated_summary: data.summary,
         });
-
         await supabase
           .from("profiles")
           .update({ monthly_lookup_count: (profile?.monthly_lookup_count ?? 0) + 1 })
@@ -90,52 +78,14 @@ const Index = () => {
         refreshProfile();
       }
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Navigate to the shareable city URL
+      const slug = toCitySlug(data.cityName, data.state);
+      navigate(`/city/${slug}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       toast({ title: "Couldn't look up city", description: message, variant: "destructive" });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleClear = () => {
-    setCityData(null);
-    setCityImages({ photos: [] });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleSaveCity = async () => {
-    if (!user || !cityData) return;
-
-    if (subscription.plan !== "pro") {
-      const { count } = await supabase
-        .from("saved_cities")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id);
-
-      if ((count ?? 0) >= 10) {
-        toast({
-          title: "Save limit reached",
-          description: "Upgrade to Pro for unlimited saved cities.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
-    const { error } = await supabase.from("saved_cities").insert({
-      user_id: user.id,
-      city_name: cityData.cityName,
-      state_region: cityData.state,
-      summary: cityData.summary,
-      insights_json: cityData as any,
-    });
-
-    if (error) {
-      toast({ title: "Couldn't save", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "City saved! 📌", description: `${cityData.cityName} added to your favorites.` });
     }
   };
 
@@ -145,31 +95,24 @@ const Index = () => {
         {isLoading && <CityLoadingExperience cityName={loadingCity} />}
       </AnimatePresence>
 
-      {cityData ? (
-        <div className="min-h-[100dvh] bg-background text-foreground pt-14">
-          <CityResults data={cityData} images={cityImages} onClear={handleClear} onSave={user ? handleSaveCity : undefined} />
-          <Footer />
-          <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
-        </div>
-      ) : (
-        <div className="min-h-[100dvh] bg-background text-foreground pt-14">
-          <ProgressNav />
-          <HeroSection onSearch={handleSearch} isLoading={isLoading} />
-          <BigIdea />
-          <WhyHere />
-          <CityPlanning />
-          <UndergroundInfra />
-          <DevelopmentPhase />
-          <ServicesScale />
-          <FundingFlow />
-          <GrowthTimeline />
-          <SystemsDashboard />
-          <CitySimulation />
-          <Takeaway />
-          <Footer />
-          <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
-        </div>
-      )}
+      <div className="min-h-[100dvh] bg-background text-foreground pt-14">
+        <ProgressNav />
+        <HeroSection onSearch={handleSearch} isLoading={isLoading} />
+        <SocialProof />
+        <BigIdea />
+        <WhyHere />
+        <CityPlanning />
+        <UndergroundInfra />
+        <DevelopmentPhase />
+        <ServicesScale />
+        <FundingFlow />
+        <GrowthTimeline />
+        <SystemsDashboard />
+        <CitySimulation />
+        <Takeaway />
+        <Footer />
+        <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
+      </div>
     </>
   );
 };

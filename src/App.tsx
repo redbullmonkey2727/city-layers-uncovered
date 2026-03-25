@@ -26,6 +26,7 @@ import TripPlanner from "./pages/TripPlanner.tsx";
 import Chat from "./pages/Chat.tsx";
 import Profile from "./pages/Profile.tsx";
 import EditProfile from "./pages/EditProfile.tsx";
+import City from "./pages/City.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
           <main id="main-content">
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/city/:slug" element={<City />} />
               <Route path="/sign-in" element={<SignIn />} />
               <Route path="/sign-up" element={<SignUp />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
