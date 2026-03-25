@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import CitySearch from "./CitySearch";
 import RecentSearches from "./RecentSearches";
 import { useMemo, useEffect, useState } from "react";
-import { Eye } from "lucide-react";
+import { Eye, Shuffle } from "lucide-react";
+import { getRandomCity } from "@/lib/randomCities";
 
 interface Props {
   onSearch: (city: string) => void;
