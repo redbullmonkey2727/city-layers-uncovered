@@ -180,7 +180,7 @@ const Navbar = () => {
       {/* Mobile dropdown overlay */}
       {mobileOpen && (
         <div
-          className="md:hidden fixed inset-0 top-14 bg-background/98 backdrop-blur-xl z-40 overflow-y-auto"
+          className="md:hidden fixed inset-x-0 top-14 bottom-0 bg-background z-[60] overflow-y-auto border-t border-border"
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"
