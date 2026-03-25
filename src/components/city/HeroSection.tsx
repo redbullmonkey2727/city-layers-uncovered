@@ -184,6 +184,23 @@ const HeroSection = ({ onSearch, isLoading }: Props) => {
         </motion.p>
 
         <CitySearch onSearch={onSearch} isLoading={isLoading} />
+
+        <motion.div
+          className="flex justify-center mt-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+        >
+          <button
+            onClick={() => onSearch(getRandomCity())}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-card/60 backdrop-blur-sm border border-border/40 text-sm text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-card/80 transition-all font-heading disabled:opacity-40"
+          >
+            <Shuffle className="w-3.5 h-3.5" />
+            Surprise me
+          </button>
+        </motion.div>
+
         <RecentSearches onSelect={onSearch} />
 
         <motion.div
