@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 import Navbar from "@/components/Navbar";
 import RequireAdmin from "@/components/RequireAdmin";
 import Index from "./pages/Index.tsx";
@@ -31,6 +32,42 @@ import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
 
+function AppRoutes() {
+  useGoogleAnalytics();
+  return (
+    <>
+      <a href="#main-content" className="skip-link">Skip to content</a>
+      <Navbar />
+      <main id="main-content">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/city/:slug" element={<City />} />
+          <Route path="/sign-in" element={<SignIn />} />
+          <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/contact-sales" element={<ContactSales />} />
+          <Route path="/search-history" element={<SearchHistory />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/saved" element={<Saved />} />
+          <Route path="/trips" element={<TripPlanner />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/u/:username" element={<Profile />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
+          <Route path="/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
+          <Route path="/sales" element={<RequireAdmin><Sales /></RequireAdmin>} />
+          <Route path="/finance" element={<RequireAdmin><Finance /></RequireAdmin>} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -38,36 +75,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          {/* Skip link for keyboard a11y */}
-          <a href="#main-content" className="skip-link">Skip to content</a>
-          <Navbar />
-          <main id="main-content">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/city/:slug" element={<City />} />
-              <Route path="/sign-in" element={<SignIn />} />
-              <Route path="/sign-up" element={<SignUp />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/contact-sales" element={<ContactSales />} />
-              <Route path="/search-history" element={<SearchHistory />} />
-              <Route path="/explore" element={<Explore />} />
-              <Route path="/saved" element={<Saved />} />
-              <Route path="/trips" element={<TripPlanner />} />
-              <Route path="/chat" element={<Chat />} />
-              <Route path="/u/:username" element={<Profile />} />
-              <Route path="/edit-profile" element={<EditProfile />} />
-              {/* Admin-only routes */}
-              <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
-              <Route path="/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
-              <Route path="/sales" element={<RequireAdmin><Sales /></RequireAdmin>} />
-              <Route path="/finance" element={<RequireAdmin><Finance /></RequireAdmin>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
+          <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
