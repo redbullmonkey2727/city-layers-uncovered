@@ -83,7 +83,6 @@ const App = () => (
 );
 
 export default App;
-              <Route path="/" element={<Index />} />
               <Route path="/city/:slug" element={<City />} />
               <Route path="/sign-in" element={<SignIn />} />
               <Route path="/sign-up" element={<SignUp />} />
