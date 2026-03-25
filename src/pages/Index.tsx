@@ -62,15 +62,17 @@ const Index = () => {
       const data = await lookupCity(city);
       analytics.track({ name: "city_searched", properties: { city: data.cityName, state: data.state } });
 
-      // Track search and increment usage for signed-in users
+      // Track search for all users (signed-in and anonymous)
+      await supabase.from("search_events").insert({
+        user_id: user?.id ?? null,
+        query_text: city,
+        city_name: data.cityName,
+        state_region: data.state,
+        generated_summary: data.summary,
+      });
+
+      // Increment usage for signed-in users
       if (user) {
-        await supabase.from("search_events").insert({
-          user_id: user.id,
-          query_text: city,
-          city_name: data.cityName,
-          state_region: data.state,
-          generated_summary: data.summary,
-        });
         await supabase
           .from("profiles")
           .update({ monthly_lookup_count: (profile?.monthly_lookup_count ?? 0) + 1 })

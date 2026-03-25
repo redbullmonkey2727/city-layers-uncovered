@@ -788,7 +788,7 @@ export type Database = {
           query_text: string | null
           state_region: string | null
           trip_id: string | null
-          user_id: string
+          user_id: string | null
           was_cached: boolean
         }
         Insert: {
@@ -802,7 +802,7 @@ export type Database = {
           query_text?: string | null
           state_region?: string | null
           trip_id?: string | null
-          user_id: string
+          user_id?: string | null
           was_cached?: boolean
         }
         Update: {
@@ -816,7 +816,7 @@ export type Database = {
           query_text?: string | null
           state_region?: string | null
           trip_id?: string | null
-          user_id?: string
+          user_id?: string | null
           was_cached?: boolean
         }
         Relationships: [
