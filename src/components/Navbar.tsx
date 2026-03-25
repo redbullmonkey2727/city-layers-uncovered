@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -177,10 +178,9 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile dropdown overlay */}
-      {mobileOpen && (
+      {mobileOpen && createPortal(
         <div
-          className="md:hidden fixed inset-0 top-14 bg-background/98 backdrop-blur-xl z-40 overflow-y-auto"
+          className="md:hidden fixed inset-x-0 top-14 bottom-0 bg-background z-[9999] overflow-y-auto border-t border-border"
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"
@@ -248,7 +248,8 @@ const Navbar = () => {
               </>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </nav>
   );
