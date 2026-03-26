@@ -366,8 +366,8 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
             >
               {labels[tab]}
             </button>
-            );})
-          ))}
+            )})}
+
         </div>
       </div>
 
