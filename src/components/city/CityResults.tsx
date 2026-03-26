@@ -627,6 +627,12 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 loading={!data.milestones?.length}
               />
             </motion.div>
+          ) : activeTab === "what-if" ? (
+            <motion.div key="what-if" className="space-y-16"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
+            >
+              <WhatIfSimulator data={data} />
+            </motion.div>
           ) : null}
         </AnimatePresence>
 
