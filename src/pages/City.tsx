@@ -67,9 +67,8 @@ const City = () => {
     if (user && subscription.plan !== "pro" && profile) {
       const resetAt = profile.lookup_reset_at ? new Date(profile.lookup_reset_at) : new Date(0);
       const now = new Date();
-      const monthsSinceReset =
-        (now.getFullYear() - resetAt.getFullYear()) * 12 + (now.getMonth() - resetAt.getMonth());
-      if (monthsSinceReset >= 1) {
+      const isNewDay = now.toDateString() !== resetAt.toDateString();
+      if (isNewDay) {
         await supabase
           .from("profiles")
           .update({ monthly_lookup_count: 0, lookup_reset_at: now.toISOString() })
@@ -80,6 +79,21 @@ const City = () => {
         setIsLoading(false);
         return;
       }
+    } else if (!user) {
+      const today = new Date().toDateString();
+      const stored = localStorage.getItem("anon_lookups");
+      const parsed = stored ? JSON.parse(stored) : { date: today, count: 0 };
+      if (parsed.date !== today) {
+        parsed.date = today;
+        parsed.count = 0;
+      }
+      if (parsed.count >= FREE_LOOKUP_LIMIT) {
+        setShowPaywall(true);
+        setIsLoading(false);
+        return;
+      }
+      parsed.count++;
+      localStorage.setItem("anon_lookups", JSON.stringify(parsed));
     }
 
     setIsLoading(true);
