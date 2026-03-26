@@ -717,6 +717,12 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
             >
               <CityPower data={data} />
             </motion.div>
+          ) : activeTab === "forecast" ? (
+            <motion.div key="forecast" className="space-y-16"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
+            >
+              <CityForecast cityName={data.cityName} state={data.state} population={data.population} />
+            </motion.div>
           ) : null}
         </AnimatePresence>
 
