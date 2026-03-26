@@ -699,32 +699,22 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 loading={!data.milestones?.length}
               />
             </motion.div>
-          ) : activeTab === "what-if" ? (
-            <motion.div key="what-if" className="space-y-16"
-              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
-            >
-              <WhatIfSimulator data={data} />
-            </motion.div>
-          ) : activeTab === "intel" ? (
-            <motion.div key="intel" className="space-y-16"
-              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
-            >
-              <CityIntelligence data={data} />
-            </motion.div>
-          ) : activeTab === "power" ? (
-            <motion.div key="power" className="space-y-16"
-              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
-            >
-              <CityPower data={data} />
-            </motion.div>
-          ) : activeTab === "forecast" ? (
-            <motion.div key="forecast" className="space-y-16"
-              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
-            >
-              <CityForecast cityName={data.cityName} state={data.state} population={data.population} />
-            </motion.div>
           ) : null}
         </AnimatePresence>
+
+        {/* Pre-render heavy tabs so they fetch data immediately, just hide when inactive */}
+        <div className={activeTab === "what-if" ? "" : "hidden"}>
+          <WhatIfSimulator data={data} />
+        </div>
+        <div className={activeTab === "intel" ? "" : "hidden"}>
+          <CityIntelligence data={data} />
+        </div>
+        <div className={activeTab === "power" ? "" : "hidden"}>
+          <CityPower data={data} />
+        </div>
+        <div className={activeTab === "forecast" ? "" : "hidden"}>
+          <CityForecast cityName={data.cityName} state={data.state} population={data.population} />
+        </div>
 
         {/* Footer CTA */}
         <motion.div {...fadeIn} transition={{ delay: 0.5 }} className="text-center pt-8">
