@@ -109,8 +109,8 @@ const ScoreRing = ({
       </AnimatePresence>
     </div>
   );
+};
 
-/* ── Radar chart ── */
 const CityRadar = ({ data }: { data: CityData }) => {
   const traits = [
     { label: "History", value: Math.min(data.layers.periods.length / 5, 1) },
