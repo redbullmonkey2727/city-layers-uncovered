@@ -380,9 +380,32 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                       <TrendingUp className="w-4 h-4 text-primary" /> City Scores
                     </h4>
                     <div className="flex justify-around">
-                      <ScoreRing score={walkScore} label="Walkability" color="hsl(var(--secondary))" icon={<Footprints className="w-3 h-3" />} />
-                      <ScoreRing score={historyScore} label="History" color="hsl(var(--primary))" icon={<Calendar className="w-3 h-3" />} />
-                      <ScoreRing score={infraScore} label="Infrastructure" color="hsl(var(--infra-water))" icon={<ThermometerSun className="w-3 h-3" />} />
+                      <ScoreRing score={walkScore} label="Walkability" color="hsl(var(--secondary))" icon={<Footprints className="w-3 h-3" />}
+                        isExpanded={expandedScore === "walk"} onToggle={() => setExpandedScore(expandedScore === "walk" ? null : "walk")}
+                        factors={[
+                          { name: `${data.whatYoureSeeing.neighborhoods.length} walkable neighborhoods`, impact: data.whatYoureSeeing.neighborhoods.length * 5, direction: "positive" },
+                          { name: "Street grid layout", impact: data.whatYoureSeeing.streetLayout ? 12 : 0, direction: "positive" },
+                          { name: `${data.whatYoureSeeing.landmarks.length} pedestrian landmarks`, impact: data.whatYoureSeeing.landmarks.length * 3, direction: "positive" },
+                          { name: "Car-dependent infrastructure", impact: 15, direction: "negative" },
+                        ]}
+                      />
+                      <ScoreRing score={historyScore} label="History" color="hsl(var(--primary))" icon={<Calendar className="w-3 h-3" />}
+                        isExpanded={expandedScore === "history"} onToggle={() => setExpandedScore(expandedScore === "history" ? null : "history")}
+                        factors={[
+                          { name: `${data.layers.periods.length} documented eras`, impact: data.layers.periods.length * 10, direction: "positive" },
+                          { name: `Founded ${data.founded}`, impact: 15, direction: "positive" },
+                          { name: `${data.whoBuiltThis.keyFigures.length} key historical figures`, impact: data.whoBuiltThis.keyFigures.length * 5, direction: "positive" },
+                        ]}
+                      />
+                      <ScoreRing score={infraScore} label="Infrastructure" color="hsl(var(--infra-water))" icon={<ThermometerSun className="w-3 h-3" />}
+                        isExpanded={expandedScore === "infra"} onToggle={() => setExpandedScore(expandedScore === "infra" ? null : "infra")}
+                        factors={[
+                          { name: data.infrastructure.notableEngineering ? "Notable engineering feats" : "Standard engineering", impact: data.infrastructure.notableEngineering ? 25 : 10, direction: "positive" },
+                          { name: "Water system coverage", impact: 15, direction: "positive" },
+                          { name: "Aging infrastructure", impact: 20, direction: "negative" },
+                          { name: "Transport network", impact: 12, direction: "positive" },
+                        ]}
+                      />
                     </div>
                   </div>
 
