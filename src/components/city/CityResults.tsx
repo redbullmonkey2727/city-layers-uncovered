@@ -710,6 +710,12 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
             >
               <CityIntelligence data={data} />
             </motion.div>
+          ) : activeTab === "power" ? (
+            <motion.div key="power" className="space-y-16"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
+            >
+              <CityPower data={data} />
+            </motion.div>
           ) : null}
         </AnimatePresence>
 
