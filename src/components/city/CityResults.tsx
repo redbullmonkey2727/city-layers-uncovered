@@ -9,6 +9,7 @@ import MilestoneTimeline from "./MilestoneTimeline";
 import WhatIfSimulator from "./WhatIfSimulator";
 import CityIntelligence from "./CityIntelligence";
 import CityPower from "./CityPower";
+import CityForecast from "./CityForecast";
 import CityImageComponent from "./CityImage";
 
 interface Props {
@@ -201,7 +202,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
   const fadeIn = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [expandedTimeline, setExpandedTimeline] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "deep-dive" | "timeline" | "what-if" | "intel" | "power">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "deep-dive" | "timeline" | "what-if" | "intel" | "power" | "forecast">("overview");
   const [expandedScore, setExpandedScore] = useState<string | null>(null);
   const { toast } = useToast();
   const heroRef = useRef<HTMLDivElement>(null);
@@ -349,10 +350,10 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
       {/* ── Tab Navigation ── */}
       <div className="sticky top-14 z-30 bg-background/80 backdrop-blur-md border-b border-border/40">
         <div className="max-w-5xl mx-auto px-6 flex gap-1">
-          {(["overview", "deep-dive", "timeline", "what-if", "intel", "power"] as const).map((tab) => {
+          {(["overview", "deep-dive", "timeline", "what-if", "intel", "power", "forecast"] as const).map((tab) => {
             const labels: Record<string, string> = {
               overview: "📊 Overview", "deep-dive": "🔍 Deep Dive", timeline: "🕰️ Timeline",
-              "what-if": "🎮 What If?", intel: "🔮 Intel", power: "🏛️ Power"
+              "what-if": "🎮 What If?", intel: "🔮 Intel", power: "🏛️ Power", forecast: "🚀 Forecast"
             };
             return (
             <button
@@ -715,6 +716,12 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
               initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
             >
               <CityPower data={data} />
+            </motion.div>
+          ) : activeTab === "forecast" ? (
+            <motion.div key="forecast" className="space-y-16"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
+            >
+              <CityForecast cityName={data.cityName} state={data.state} population={data.population} />
             </motion.div>
           ) : null}
         </AnimatePresence>
