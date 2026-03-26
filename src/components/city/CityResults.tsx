@@ -201,6 +201,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [expandedTimeline, setExpandedTimeline] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "deep-dive" | "timeline" | "what-if" | "intel">("overview");
+  const [expandedScore, setExpandedScore] = useState<string | null>(null);
   const { toast } = useToast();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
