@@ -350,10 +350,10 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
       {/* ── Tab Navigation ── */}
       <div className="sticky top-14 z-30 bg-background/80 backdrop-blur-md border-b border-border/40">
         <div className="max-w-5xl mx-auto px-6 flex gap-1">
-          {(["overview", "deep-dive", "timeline", "what-if", "intel", "power"] as const).map((tab) => {
+          {(["overview", "deep-dive", "timeline", "what-if", "intel", "power", "forecast"] as const).map((tab) => {
             const labels: Record<string, string> = {
               overview: "📊 Overview", "deep-dive": "🔍 Deep Dive", timeline: "🕰️ Timeline",
-              "what-if": "🎮 What If?", intel: "🔮 Intel", power: "🏛️ Power"
+              "what-if": "🎮 What If?", intel: "🔮 Intel", power: "🏛️ Power", forecast: "🚀 Forecast"
             };
             return (
             <button
