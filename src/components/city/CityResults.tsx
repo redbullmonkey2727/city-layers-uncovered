@@ -634,6 +634,12 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
             >
               <WhatIfSimulator data={data} />
             </motion.div>
+          ) : activeTab === "intel" ? (
+            <motion.div key="intel" className="space-y-16"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
+            >
+              <CityIntelligence data={data} />
+            </motion.div>
           ) : null}
         </AnimatePresence>
 
