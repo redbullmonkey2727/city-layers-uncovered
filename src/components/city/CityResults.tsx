@@ -9,6 +9,7 @@ import MilestoneTimeline from "./MilestoneTimeline";
 import WhatIfSimulator from "./WhatIfSimulator";
 import CityIntelligence from "./CityIntelligence";
 import CityPower from "./CityPower";
+import CityForecast from "./CityForecast";
 import CityImageComponent from "./CityImage";
 
 interface Props {
