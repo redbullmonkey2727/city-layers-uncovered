@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import MilestoneTimeline from "./MilestoneTimeline";
 import WhatIfSimulator from "./WhatIfSimulator";
 import CityIntelligence from "./CityIntelligence";
+import CityPower from "./CityPower";
 import CityImageComponent from "./CityImage";
 
 interface Props {
