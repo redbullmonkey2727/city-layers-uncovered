@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import MilestoneTimeline from "./MilestoneTimeline";
 import WhatIfSimulator from "./WhatIfSimulator";
+import CityIntelligence from "./CityIntelligence";
 import CityImageComponent from "./CityImage";
 
 interface Props {
@@ -160,7 +161,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
   const fadeIn = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [expandedTimeline, setExpandedTimeline] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "deep-dive" | "timeline" | "what-if">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "deep-dive" | "timeline" | "what-if" | "intel">("overview");
   const { toast } = useToast();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
@@ -307,17 +308,17 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
       {/* ── Tab Navigation ── */}
       <div className="sticky top-14 z-30 bg-background/80 backdrop-blur-md border-b border-border/40">
         <div className="max-w-5xl mx-auto px-6 flex gap-1">
-          {(["overview", "deep-dive", "timeline", "what-if"] as const).map((tab) => (
+          {(["overview", "deep-dive", "timeline", "what-if", "intel"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-5 py-3 text-sm font-heading font-medium transition-all border-b-2 ${
+              className={`px-3 md:px-5 py-3 text-xs md:text-sm font-heading font-medium transition-all border-b-2 whitespace-nowrap ${
                 activeTab === tab
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {tab === "overview" ? "📊 Overview" : tab === "deep-dive" ? "🔍 Deep Dive" : tab === "timeline" ? "🕰️ Timeline" : "🎮 What If?"}
+              {tab === "overview" ? "📊 Overview" : tab === "deep-dive" ? "🔍 Deep Dive" : tab === "timeline" ? "🕰️ Timeline" : tab === "what-if" ? "🎮 What If?" : "🔮 Intel"}
             </button>
           ))}
         </div>
@@ -632,6 +633,12 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
               initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
             >
               <WhatIfSimulator data={data} />
+            </motion.div>
+          ) : activeTab === "intel" ? (
+            <motion.div key="intel" className="space-y-16"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
+            >
+              <CityIntelligence data={data} />
             </motion.div>
           ) : null}
         </AnimatePresence>
