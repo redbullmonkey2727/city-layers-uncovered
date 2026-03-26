@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import MilestoneTimeline from "./MilestoneTimeline";
 import WhatIfSimulator from "./WhatIfSimulator";
+import CityIntelligence from "./CityIntelligence";
 import CityImageComponent from "./CityImage";
 
 interface Props {
