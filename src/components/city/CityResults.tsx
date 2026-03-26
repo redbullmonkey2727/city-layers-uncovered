@@ -6,6 +6,7 @@ import { Bookmark, ChevronLeft, ChevronRight, MapPin, Users, Calendar, Sparkles,
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import MilestoneTimeline from "./MilestoneTimeline";
+import WhatIfSimulator from "./WhatIfSimulator";
 import CityImageComponent from "./CityImage";
 
 interface Props {
@@ -159,7 +160,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
   const fadeIn = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [expandedTimeline, setExpandedTimeline] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "deep-dive" | "timeline">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "deep-dive" | "timeline" | "what-if">("overview");
   const { toast } = useToast();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
@@ -306,7 +307,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
       {/* ── Tab Navigation ── */}
       <div className="sticky top-14 z-30 bg-background/80 backdrop-blur-md border-b border-border/40">
         <div className="max-w-5xl mx-auto px-6 flex gap-1">
-          {(["overview", "deep-dive", "timeline"] as const).map((tab) => (
+          {(["overview", "deep-dive", "timeline", "what-if"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -316,7 +317,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {tab === "overview" ? "📊 Overview" : tab === "deep-dive" ? "🔍 Deep Dive" : "🕰️ Timeline"}
+              {tab === "overview" ? "📊 Overview" : tab === "deep-dive" ? "🔍 Deep Dive" : tab === "timeline" ? "🕰️ Timeline" : "🎮 What If?"}
             </button>
           ))}
         </div>
@@ -625,6 +626,12 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
                 cityName={data.cityName}
                 loading={!data.milestones?.length}
               />
+            </motion.div>
+          ) : activeTab === "what-if" ? (
+            <motion.div key="what-if" className="space-y-16"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
+            >
+              <WhatIfSimulator data={data} />
             </motion.div>
           ) : null}
         </AnimatePresence>
