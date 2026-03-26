@@ -41,14 +41,24 @@ const AnimatedCounter = ({ value, duration = 2000 }: { value: string; duration?:
   return <span>{display}</span>;
 };
 
-/* ── Animated ring score ── */
-const ScoreRing = ({ score, label, color, icon }: { score: number; label: string; color: string; icon: React.ReactNode }) => {
+/* ── Interactive Score Ring with breakdown ── */
+const ScoreRing = ({
+  score, label, color, icon, factors, isExpanded, onToggle,
+}: {
+  score: number; label: string; color: string; icon: React.ReactNode;
+  factors: { name: string; impact: number; direction: "positive" | "negative" }[];
+  isExpanded: boolean;
+  onToggle: () => void;
+}) => {
   const circumference = 2 * Math.PI * 32;
   const offset = circumference - (score / 100) * circumference;
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="relative w-20 h-20">
+      <button
+        onClick={onToggle}
+        className={`relative w-20 h-20 group cursor-pointer transition-transform ${isExpanded ? "scale-110" : "hover:scale-105"}`}
+      >
         <svg viewBox="0 0 72 72" className="w-full h-full -rotate-90">
           <circle cx="36" cy="36" r="32" fill="none" stroke="hsl(var(--muted))" strokeWidth="4" />
           <motion.circle
@@ -62,14 +72,43 @@ const ScoreRing = ({ score, label, color, icon }: { score: number; label: string
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-lg font-heading font-bold">{score}</span>
         </div>
-      </div>
+        <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-card border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+        </div>
+      </button>
       <div className="flex items-center gap-1 text-xs text-muted-foreground font-heading">
         {icon}
         {label}
       </div>
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden w-full max-w-[200px]"
+          >
+            <div className="space-y-1.5 pt-2 border-t border-border/50 mt-1">
+              {factors.map((f, i) => (
+                <motion.div
+                  key={f.name}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="flex items-center gap-1.5 text-[10px]"
+                >
+                  <span className={f.direction === "positive" ? "text-emerald-500" : "text-red-400"}>
+                    {f.direction === "positive" ? "+" : "−"}{Math.abs(f.impact)}
+                  </span>
+                  <span className="text-muted-foreground truncate">{f.name}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
-};
 
 /* ── Radar chart ── */
 const CityRadar = ({ data }: { data: CityData }) => {
