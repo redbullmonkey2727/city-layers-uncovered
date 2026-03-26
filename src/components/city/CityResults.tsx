@@ -202,7 +202,7 @@ const CityResults = ({ data, images, onClear, onSave }: Props) => {
   const fadeIn = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [expandedTimeline, setExpandedTimeline] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "deep-dive" | "timeline" | "what-if" | "intel" | "power">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "deep-dive" | "timeline" | "what-if" | "intel" | "power" | "forecast">("overview");
   const [expandedScore, setExpandedScore] = useState<string | null>(null);
   const { toast } = useToast();
   const heroRef = useRef<HTMLDivElement>(null);
