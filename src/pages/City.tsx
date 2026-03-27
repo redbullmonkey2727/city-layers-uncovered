@@ -143,6 +143,7 @@ const City = () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       toast({ title: "Couldn't look up city", description: message, variant: "destructive" });
+      setLoadError(true);
     } finally {
       setIsLoading(false);
     }
