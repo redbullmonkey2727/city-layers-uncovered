@@ -191,6 +191,20 @@ const City = () => {
           <Footer />
         </div>
       )}
+
+      {!isLoading && !cityData && !showPaywall && (
+        <div className="min-h-[100dvh] bg-background text-foreground pt-14 flex flex-col items-center justify-center gap-4">
+          <p className="text-muted-foreground text-lg">
+            {loadError ? "Something went wrong loading this city." : "City not found."}
+          </p>
+          <button
+            onClick={() => loadError ? performLookup(cityFromSlug) : navigate("/")}
+            className="px-6 py-2.5 rounded-full bg-primary text-primary-foreground font-heading font-semibold text-sm hover:brightness-110 transition-all"
+          >
+            {loadError ? "Try Again" : "Go Home"}
+          </button>
+        </div>
+      )}
       <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
     </>
   );
