@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,10 +16,13 @@ const FREE_LOOKUP_LIMIT = 5;
 const City = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [cityData, setCityData] = useState<CityData | null>(null);
+  const location = useLocation();
+  const passedData = (location.state as any)?.cityData as CityData | undefined;
+  const [cityData, setCityData] = useState<CityData | null>(passedData || null);
   const [cityImages, setCityImages] = useState<CityImages>({ photos: [] });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!passedData);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const { toast } = useToast();
   const { user, profile, subscription, refreshProfile } = useAuth();
 
@@ -32,7 +35,18 @@ const City = () => {
         .replace(/ ([A-Z]{2})$/i, ", $1")
     : "";
 
+  // If data was passed via navigation state, just fetch images
   useEffect(() => {
+    if (passedData) {
+      analytics.track({ name: "city_searched", properties: { city: passedData.cityName, state: passedData.state } });
+      fetchCityPhotos(passedData.cityName, 6).then((photos) => {
+        setCityImages((prev) => ({ ...prev, photos }));
+      });
+      generateAIHeroImage(passedData.cityName).then((aiHero) => {
+        if (aiHero) setCityImages((prev) => ({ ...prev, aiHero }));
+      });
+      return;
+    }
     if (!cityFromSlug) return;
     performLookup(cityFromSlug);
   }, [slug]);
@@ -129,6 +143,7 @@ const City = () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       toast({ title: "Couldn't look up city", description: message, variant: "destructive" });
+      setLoadError(true);
     } finally {
       setIsLoading(false);
     }
@@ -174,6 +189,20 @@ const City = () => {
         <div className="min-h-[100dvh] bg-background text-foreground pt-14">
           <CityResults data={cityData} images={cityImages} onClear={handleClear} onSave={user ? handleSaveCity : undefined} />
           <Footer />
+        </div>
+      )}
+
+      {!isLoading && !cityData && !showPaywall && (
+        <div className="min-h-[100dvh] bg-background text-foreground pt-14 flex flex-col items-center justify-center gap-4">
+          <p className="text-muted-foreground text-lg">
+            {loadError ? "Something went wrong loading this city." : "City not found."}
+          </p>
+          <button
+            onClick={() => loadError ? performLookup(cityFromSlug) : navigate("/")}
+            className="px-6 py-2.5 rounded-full bg-primary text-primary-foreground font-heading font-semibold text-sm hover:brightness-110 transition-all"
+          >
+            {loadError ? "Try Again" : "Go Home"}
+          </button>
         </div>
       )}
       <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
