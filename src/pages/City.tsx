@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,10 +16,13 @@ const FREE_LOOKUP_LIMIT = 5;
 const City = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [cityData, setCityData] = useState<CityData | null>(null);
+  const location = useLocation();
+  const passedData = (location.state as any)?.cityData as CityData | undefined;
+  const [cityData, setCityData] = useState<CityData | null>(passedData || null);
   const [cityImages, setCityImages] = useState<CityImages>({ photos: [] });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!passedData);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const { toast } = useToast();
   const { user, profile, subscription, refreshProfile } = useAuth();
 

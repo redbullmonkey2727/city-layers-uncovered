@@ -94,9 +94,9 @@ const Index = () => {
         refreshProfile();
       }
 
-      // Navigate to the shareable city URL
+      // Navigate to the shareable city URL, passing data to avoid re-fetch
       const slug = toCitySlug(data.cityName, data.state);
-      navigate(`/city/${slug}`);
+      navigate(`/city/${slug}`, { state: { cityData: data } });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       toast({ title: "Couldn't look up city", description: message, variant: "destructive" });
