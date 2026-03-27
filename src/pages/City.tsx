@@ -35,7 +35,18 @@ const City = () => {
         .replace(/ ([A-Z]{2})$/i, ", $1")
     : "";
 
+  // If data was passed via navigation state, just fetch images
   useEffect(() => {
+    if (passedData) {
+      analytics.track({ name: "city_searched", properties: { city: passedData.cityName, state: passedData.state } });
+      fetchCityPhotos(passedData.cityName, 6).then((photos) => {
+        setCityImages((prev) => ({ ...prev, photos }));
+      });
+      generateAIHeroImage(passedData.cityName).then((aiHero) => {
+        if (aiHero) setCityImages((prev) => ({ ...prev, aiHero }));
+      });
+      return;
+    }
     if (!cityFromSlug) return;
     performLookup(cityFromSlug);
   }, [slug]);
