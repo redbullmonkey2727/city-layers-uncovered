@@ -129,16 +129,33 @@ Be specific and factual. Use real names and dates.`;
     if (content) {
       // Strip markdown code fences if present
       const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      let parsed;
       try {
-        const parsed = JSON.parse(cleaned);
-        console.log("[city-lookup] Successfully parsed city data");
-        return new Response(JSON.stringify({ success: true, data: parsed }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        parsed = JSON.parse(cleaned);
       } catch (parseErr) {
-        console.error("[city-lookup] JSON parse error:", parseErr, "Content:", cleaned.substring(0, 200));
-        throw new Error("Could not parse AI response as JSON");
+        console.error("[city-lookup] JSON parse error, attempting repair:", (parseErr as Error).message);
+        // Try to repair truncated JSON by closing open braces/brackets
+        let repaired = cleaned;
+        // Remove any trailing incomplete key-value pair
+        repaired = repaired.replace(/,\s*"[^"]*"?\s*:?\s*[^}\]]*$/, "");
+        // Count and close open braces/brackets
+        const opens = (repaired.match(/{/g) || []).length;
+        const closes = (repaired.match(/}/g) || []).length;
+        const openBrackets = (repaired.match(/\[/g) || []).length;
+        const closeBrackets = (repaired.match(/\]/g) || []).length;
+        for (let i = 0; i < openBrackets - closeBrackets; i++) repaired += "]";
+        for (let i = 0; i < opens - closes; i++) repaired += "}";
+        try {
+          parsed = JSON.parse(repaired);
+          console.log("[city-lookup] JSON repair successful");
+        } catch {
+          throw new Error("Could not parse AI response as JSON");
+        }
       }
+      console.log("[city-lookup] Successfully parsed city data");
+      return new Response(JSON.stringify({ success: true, data: parsed }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     throw new Error("No response content from AI");
