@@ -89,6 +89,7 @@ Be specific and factual. Use real names and dates.`;
           { role: "user", content: `Tell me about ${city}. Return only the JSON object.` },
         ],
         temperature: 0.7,
+        max_tokens: 8192,
       }),
     });
 
