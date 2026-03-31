@@ -1050,6 +1050,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_org_safe: {
+        Args: { org_uuid: string }
+        Returns: {
+          created_at: string
+          id: string
+          industry: string
+          logo_url: string
+          name: string
+          plan: string
+          seats_limit: number
+          slug: string
+          website: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
