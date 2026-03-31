@@ -107,9 +107,9 @@ const CityForecast = ({ cityName, state, population }: Props) => {
           scenarios: Array.isArray(raw.scenarios) ? raw.scenarios.filter(Boolean).map((s: any) => ({ ...s, keyChanges: Array.isArray(s?.keyChanges) ? s.keyChanges.filter(Boolean) : [] })) : [],
           risks: Array.isArray(raw.risks) ? raw.risks.filter(Boolean) : [],
           opportunities: Array.isArray(raw.opportunities) ? raw.opportunities.filter(Boolean) : [],
-          populationProjection: Array.isArray(raw.populationProjection) ? raw.populationProjection.filter(Boolean) : [],
+          populationForecast: Array.isArray(raw.populationForecast) ? raw.populationForecast.filter(Boolean) : [],
           overallOutlook: typeof raw.overallOutlook === "string" ? raw.overallOutlook : "",
-          confidenceScore: typeof raw.confidenceScore === "number" ? raw.confidenceScore : 50,
+          outlookSummary: typeof raw.outlookSummary === "string" ? raw.outlookSummary : "",
         });
       } catch (err) {
         console.error("Forecast error:", err);
