@@ -88,7 +88,7 @@ const PaywallModal = ({ open, onClose }: Props) => {
         </div>
         <h2 id="paywall-title" className="text-2xl font-heading font-bold">Daily Limit Reached</h2>
         <p className="text-muted-foreground">
-          You've used all 5 free city lookups today. Upgrade to Pro for unlimited access.
+          You've used all 10 free city lookups today. Upgrade to Pro for unlimited access.
         </p>
         {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
         <div className="space-y-3">
