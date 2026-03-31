@@ -13,7 +13,7 @@ import {
   CheckCircle2, Lock, Infinity, BookmarkPlus, BarChart3, Headphones, Pencil,
 } from "lucide-react";
 
-const FREE_LOOKUP_LIMIT = 5;
+const FREE_LOOKUP_LIMIT = 20;
 
 interface SearchEvent {
   id: string;

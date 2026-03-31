@@ -25,7 +25,7 @@ import SocialProof from "@/components/city/SocialProof";
 import PaywallModal from "@/components/PaywallModal";
 import Footer from "@/components/Footer";
 
-const FREE_LOOKUP_LIMIT = 5;
+const FREE_LOOKUP_LIMIT = 20;
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
