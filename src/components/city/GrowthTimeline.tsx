@@ -149,9 +149,9 @@ const GrowthTimeline = () => {
             {era.label}
           </text>
           {/* Population badge */}
-          {era.features.find(f => f.includes("people")) && (
+          {era.features.find(f => (f || "").includes("people")) && (
             <text x="300" y="35" textAnchor="middle" fill="hsl(var(--primary) / 0.7)" fontSize="9" fontFamily="var(--font-heading)">
-              {era.features.find(f => f.includes("people"))}
+              {era.features.find(f => (f || "").includes("people"))}
             </text>
           )}
         </svg>

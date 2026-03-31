@@ -20,7 +20,7 @@ interface PowerData {
 }
 
 const partyColor = (party: string) => {
-  const p = party.toLowerCase();
+  const p = (party || "").toLowerCase();
   if (p.includes("democrat")) return "hsl(217 91% 60%)";
   if (p.includes("republican")) return "hsl(0 72% 51%)";
   if (p.includes("independent") || p.includes("nonpartisan")) return "hsl(280 60% 55%)";
@@ -28,7 +28,7 @@ const partyColor = (party: string) => {
 };
 
 const partyBg = (party: string) => {
-  const p = party.toLowerCase();
+  const p = (party || "").toLowerCase();
   if (p.includes("democrat")) return "bg-blue-500/10 text-blue-400 border-blue-500/20";
   if (p.includes("republican")) return "bg-red-500/10 text-red-400 border-red-500/20";
   return "bg-purple-500/10 text-purple-400 border-purple-500/20";
