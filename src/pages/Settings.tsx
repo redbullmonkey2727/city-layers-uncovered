@@ -145,11 +145,18 @@ const Settings = () => {
     try {
       const keyValue = `wbat_${crypto.randomUUID().replace(/-/g, "").slice(0, 32)}`;
       const prefix = keyValue.slice(0, 12);
+      
+      // Hash the key with SHA-256 before storing
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(keyValue));
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const keyHash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+
       await (supabase.from("api_keys") as any).insert({
         org_id: org.id,
         name: newKeyName.trim(),
         key_prefix: prefix,
-        key_hash: keyValue, // In production, store hashed
+        key_hash: keyHash,
         created_by: user!.id,
       });
 
