@@ -57,7 +57,39 @@ const CityPower = ({ data }: { data: CityData }) => {
         });
         if (fnError) throw new Error(fnError.message);
         if (!result?.success) throw new Error(result?.error || "Failed to load");
-        setPowerData(result.data);
+        // Normalize power data to prevent undefined property access
+        const raw = result.data || {};
+        const normalized: PowerData = {
+          mayor: { name: "", party: "", since: "", previousRole: "", keyPolicies: [], approvalEstimate: "", ...(raw.mayor || {}) },
+          cityCouncil: { totalSeats: 0, democrats: 0, republicans: 0, independent: 0, keyMembers: [], ...(raw.cityCouncil || {}) },
+          stateGovernor: { name: "", party: "", ...(raw.stateGovernor || {}) },
+          congressionalReps: Array.isArray(raw.congressionalReps) ? raw.congressionalReps.map((r: any) => ({ name: "", party: "", chamber: "", district: "", ...r })) : [],
+          powerBrokers: Array.isArray(raw.powerBrokers) ? raw.powerBrokers.map((b: any) => ({ name: "", role: "", sector: "", influence: "", description: "", estimatedInvestment: "", politicalLean: "", ...b })) : [],
+          majorDevelopers: Array.isArray(raw.majorDevelopers) ? raw.majorDevelopers.map((d: any) => ({ name: "", notableProjects: [], estimatedValue: "", politicalDonations: "", ...d })) : [],
+          topEmployers: Array.isArray(raw.topEmployers) ? raw.topEmployers.map((e: any) => ({ name: "", employees: "", sector: "", ...e })) : [],
+          politicalLandscape: {
+            leaning: "", lastPresidentialVote: { democrat: 0, republican: 0, other: 0 },
+            voterTurnout: "", keyIssues: [], recentControversies: [],
+            ...(raw.politicalLandscape || {}),
+          },
+          moneyFlow: {
+            annualBudget: "", topRevenueSource: "", biggestExpense: "",
+            recentBondMeasures: [], majorFederalGrants: [],
+            ...(raw.moneyFlow || {}),
+          },
+          unions: Array.isArray(raw.unions) ? raw.unions.map((u: any) => ({ name: "", members: "", influence: "", ...u })) : [],
+          costOfLiving: { index: 100, medianHomePrice: "", medianRent: "", medianHouseholdIncome: "", groceryIndex: 100, transportIndex: 100, healthcareIndex: 100, comparedToNational: "", ...(raw.costOfLiving || {}) },
+          happinessIndex: { score: 0, ranking: "", factors: [], ...(raw.happinessIndex || {}) },
+        };
+        // Ensure arrays don't contain undefined entries
+        normalized.mayor.keyPolicies = (normalized.mayor.keyPolicies || []).filter(Boolean);
+        normalized.cityCouncil.keyMembers = (normalized.cityCouncil.keyMembers || []).filter(Boolean);
+        normalized.politicalLandscape.keyIssues = (normalized.politicalLandscape.keyIssues || []).filter(Boolean);
+        normalized.politicalLandscape.recentControversies = (normalized.politicalLandscape.recentControversies || []).filter(Boolean);
+        normalized.moneyFlow.recentBondMeasures = (normalized.moneyFlow.recentBondMeasures || []).filter(Boolean);
+        normalized.moneyFlow.majorFederalGrants = (normalized.moneyFlow.majorFederalGrants || []).filter(Boolean);
+        normalized.happinessIndex.factors = (normalized.happinessIndex.factors || []).filter(Boolean);
+        setPowerData(normalized);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Unknown error");
       } finally {
