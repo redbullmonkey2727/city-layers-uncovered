@@ -11,7 +11,7 @@ import CityResults from "@/components/city/CityResults";
 import PaywallModal from "@/components/PaywallModal";
 import Footer from "@/components/Footer";
 
-const FREE_LOOKUP_LIMIT = 20;
+const FREE_LOOKUP_LIMIT = 10;
 
 const City = () => {
   const { slug } = useParams<{ slug: string }>();

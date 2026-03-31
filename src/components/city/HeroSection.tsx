@@ -211,7 +211,7 @@ const HeroSection = ({ onSearch, isLoading }: Props) => {
         >
           {!user ? (
             <p className="text-sm text-muted-foreground">
-              5 free lookups · <Link to="/sign-up" className="text-primary hover:underline font-medium">Sign up</Link> to save your cities
+              10 free lookups/day · <Link to="/sign-up" className="text-primary hover:underline font-medium">Sign up</Link> to save your cities
             </p>
           ) : !isPro ? (
             <Link to="/pricing">

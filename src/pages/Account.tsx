@@ -161,7 +161,7 @@ const Account = () => {
                     <h3 className="font-heading font-bold text-lg">You're on the Free plan</h3>
                   </div>
                   <p className="text-muted-foreground text-sm mb-4">
-                    You're limited to {FREE_LOOKUP_LIMIT} lookups/month and 10 saved cities. Unlock everything for just $9.99/mo.
+                    You're limited to {FREE_LOOKUP_LIMIT} lookups/day and 10 saved cities. Unlock everything for just $9.99/mo.
                   </p>
                   <div className="grid grid-cols-2 gap-2 mb-5">
                     {proFeatures.map(({ icon: Icon, label }) => (

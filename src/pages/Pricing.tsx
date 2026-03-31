@@ -113,7 +113,7 @@ const Pricing = () => {
             </div>
             <p className="text-sm text-muted-foreground mb-6">Perfect for a quick road trip peek.</p>
             <ul className="space-y-3 mb-8">
-              {["5 city lookups per month", "10 saved cities", "Basic summaries", "Search history"].map((f) => (
+              {["10 city lookups per day", "10 saved cities", "Basic summaries", "Search history"].map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm">
                   <Check className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                   <span className="text-muted-foreground">{f}</span>

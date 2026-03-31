@@ -8,7 +8,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PRO_PRICE_ID = "price_1TBhvxBiI9lRiiHjTcdDiJBP";
+const PRO_PRICE_ID = "price_1TGrsx3qsXHhslKZG42UlsA9";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

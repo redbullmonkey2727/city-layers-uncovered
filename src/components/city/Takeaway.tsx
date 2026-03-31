@@ -62,7 +62,7 @@ const Takeaway = () => {
                 </Button>
               </Link>
               <p className="text-sm text-muted-foreground">
-                5 free city lookups per month · No credit card required
+                10 free city lookups per day · No credit card required
               </p>
             </>
           ) : !isPro ? (
