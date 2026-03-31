@@ -168,7 +168,7 @@ const Settings = () => {
         metadata: { name: newKeyName.trim() },
       });
 
-      toast({ title: "API key created", description: `Key: ${prefix}...` });
+      toast({ title: "API key created", description: `Copy now — this key won't be shown again: ${keyValue}` });
       setNewKeyName("");
       loadSettings();
     } catch {
