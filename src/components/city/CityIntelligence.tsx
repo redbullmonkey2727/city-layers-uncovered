@@ -179,7 +179,15 @@ const CityIntelligence = ({ data }: { data: CityData }) => {
       });
       if (fnError) throw new Error(fnError.message);
       if (!result?.success) throw new Error(result?.error || "Failed to generate intelligence");
-      setIntel(result.data);
+      const raw = result.data || {};
+      const normalized: IntelligenceData = {
+        dataPoints: Array.isArray(raw.dataPoints) ? raw.dataPoints.filter(Boolean) : [],
+        connections: Array.isArray(raw.connections) ? raw.connections.filter(Boolean) : [],
+        narrative: typeof raw.narrative === "string" ? raw.narrative : "",
+        threatLevel: ["stable", "watch", "elevated", "critical"].includes(raw.threatLevel) ? raw.threatLevel : "stable",
+        keyInsight: typeof raw.keyInsight === "string" ? raw.keyInsight : "",
+      };
+      setIntel(normalized);
       setAnimatedIn(false);
       setTimeout(() => setAnimatedIn(true), 100);
     } catch (e) {

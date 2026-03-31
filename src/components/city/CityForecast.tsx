@@ -101,7 +101,16 @@ const CityForecast = ({ cityName, state, population }: Props) => {
         });
         if (error) throw error;
         if (!result?.success) throw new Error(result?.error || "Failed");
-        setData(result.data);
+        const raw = result.data || {};
+        setData({
+          keyStats: Array.isArray(raw.keyStats) ? raw.keyStats.filter(Boolean) : [],
+          scenarios: Array.isArray(raw.scenarios) ? raw.scenarios.filter(Boolean).map((s: any) => ({ ...s, keyChanges: Array.isArray(s?.keyChanges) ? s.keyChanges.filter(Boolean) : [] })) : [],
+          risks: Array.isArray(raw.risks) ? raw.risks.filter(Boolean) : [],
+          opportunities: Array.isArray(raw.opportunities) ? raw.opportunities.filter(Boolean) : [],
+          populationForecast: Array.isArray(raw.populationForecast) ? raw.populationForecast.filter(Boolean) : [],
+          overallOutlook: typeof raw.overallOutlook === "string" ? raw.overallOutlook : "",
+          outlookSummary: typeof raw.outlookSummary === "string" ? raw.outlookSummary : "",
+        });
       } catch (err) {
         console.error("Forecast error:", err);
         toast({ title: "Couldn't load forecast", description: "Try again later.", variant: "destructive" });

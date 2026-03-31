@@ -435,8 +435,8 @@ const CityLoadingExperience = ({ cityName }: Props) => {
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={`text-[9px] leading-relaxed ${
-                    line.includes("200 OK") ? "text-emerald-500/70" :
-                    line.includes("Running") || line.includes("Generating") || line.includes("Compiling") ? "text-primary/70" :
+                    (line || "").includes("200 OK") ? "text-emerald-500/70" :
+                    (line || "").includes("Running") || (line || "").includes("Generating") || (line || "").includes("Compiling") ? "text-primary/70" :
                     "text-muted-foreground/50"
                   }`}
                 >

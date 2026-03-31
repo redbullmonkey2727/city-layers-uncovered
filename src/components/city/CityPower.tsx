@@ -20,7 +20,7 @@ interface PowerData {
 }
 
 const partyColor = (party: string) => {
-  const p = party.toLowerCase();
+  const p = (party || "").toLowerCase();
   if (p.includes("democrat")) return "hsl(217 91% 60%)";
   if (p.includes("republican")) return "hsl(0 72% 51%)";
   if (p.includes("independent") || p.includes("nonpartisan")) return "hsl(280 60% 55%)";
@@ -28,7 +28,7 @@ const partyColor = (party: string) => {
 };
 
 const partyBg = (party: string) => {
-  const p = party.toLowerCase();
+  const p = (party || "").toLowerCase();
   if (p.includes("democrat")) return "bg-blue-500/10 text-blue-400 border-blue-500/20";
   if (p.includes("republican")) return "bg-red-500/10 text-red-400 border-red-500/20";
   return "bg-purple-500/10 text-purple-400 border-purple-500/20";
@@ -57,7 +57,39 @@ const CityPower = ({ data }: { data: CityData }) => {
         });
         if (fnError) throw new Error(fnError.message);
         if (!result?.success) throw new Error(result?.error || "Failed to load");
-        setPowerData(result.data);
+        // Normalize power data to prevent undefined property access
+        const raw = result.data || {};
+        const normalized: PowerData = {
+          mayor: { name: "", party: "", since: "", previousRole: "", keyPolicies: [], approvalEstimate: "", ...(raw.mayor || {}) },
+          cityCouncil: { totalSeats: 0, democrats: 0, republicans: 0, independent: 0, keyMembers: [], ...(raw.cityCouncil || {}) },
+          stateGovernor: { name: "", party: "", ...(raw.stateGovernor || {}) },
+          congressionalReps: Array.isArray(raw.congressionalReps) ? raw.congressionalReps.map((r: any) => ({ name: "", party: "", chamber: "", district: "", ...r })) : [],
+          powerBrokers: Array.isArray(raw.powerBrokers) ? raw.powerBrokers.map((b: any) => ({ name: "", role: "", sector: "", influence: "", description: "", estimatedInvestment: "", politicalLean: "", ...b })) : [],
+          majorDevelopers: Array.isArray(raw.majorDevelopers) ? raw.majorDevelopers.map((d: any) => ({ name: "", notableProjects: [], estimatedValue: "", politicalDonations: "", ...d })) : [],
+          topEmployers: Array.isArray(raw.topEmployers) ? raw.topEmployers.map((e: any) => ({ name: "", employees: "", sector: "", ...e })) : [],
+          politicalLandscape: {
+            leaning: "", lastPresidentialVote: { democrat: 0, republican: 0, other: 0 },
+            voterTurnout: "", keyIssues: [], recentControversies: [],
+            ...(raw.politicalLandscape || {}),
+          },
+          moneyFlow: {
+            annualBudget: "", topRevenueSource: "", biggestExpense: "",
+            recentBondMeasures: [], majorFederalGrants: [],
+            ...(raw.moneyFlow || {}),
+          },
+          unions: Array.isArray(raw.unions) ? raw.unions.map((u: any) => ({ name: "", members: "", influence: "", ...u })) : [],
+          costOfLiving: { index: 100, medianHomePrice: "", medianRent: "", medianHouseholdIncome: "", groceryIndex: 100, transportIndex: 100, healthcareIndex: 100, comparedToNational: "", ...(raw.costOfLiving || {}) },
+          happinessIndex: { score: 0, ranking: "", factors: [], ...(raw.happinessIndex || {}) },
+        };
+        // Ensure arrays don't contain undefined entries
+        normalized.mayor.keyPolicies = (normalized.mayor.keyPolicies || []).filter(Boolean);
+        normalized.cityCouncil.keyMembers = (normalized.cityCouncil.keyMembers || []).filter(Boolean);
+        normalized.politicalLandscape.keyIssues = (normalized.politicalLandscape.keyIssues || []).filter(Boolean);
+        normalized.politicalLandscape.recentControversies = (normalized.politicalLandscape.recentControversies || []).filter(Boolean);
+        normalized.moneyFlow.recentBondMeasures = (normalized.moneyFlow.recentBondMeasures || []).filter(Boolean);
+        normalized.moneyFlow.majorFederalGrants = (normalized.moneyFlow.majorFederalGrants || []).filter(Boolean);
+        normalized.happinessIndex.factors = (normalized.happinessIndex.factors || []).filter(Boolean);
+        setPowerData(normalized);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Unknown error");
       } finally {
