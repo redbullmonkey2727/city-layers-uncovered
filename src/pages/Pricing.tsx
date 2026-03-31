@@ -13,7 +13,7 @@ import {
 
 
 const comparisonFeatures = [
-  { feature: "City lookups per month", free: "5", pro: "Unlimited" },
+  { feature: "City lookups per day", free: "10", pro: "Unlimited" },
   { feature: "Saved cities", free: "10", pro: "Unlimited" },
   { feature: "City summaries", free: "Basic", pro: "Premium deep dives" },
   { feature: "Search history", free: true, pro: true },
