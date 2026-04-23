@@ -118,12 +118,13 @@ Be HIGHLY specific and realistic for the actual city. Use real names of real peo
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
         temperature: 0.7,
+        response_format: { type: "json_object" },
       }),
     });
 
@@ -144,17 +145,42 @@ Be HIGHLY specific and realistic for the actual city. Use real names of real peo
     }
 
     const aiData = await response.json();
-    const raw = aiData.choices?.[0]?.message?.content || "";
+    let raw: string = aiData.choices?.[0]?.message?.content || "";
 
-    const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, raw];
-    let parsed;
+    // Strip markdown fences if present
+    const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenceMatch) raw = fenceMatch[1];
+    raw = raw.trim();
+
+    // Isolate the outermost JSON object
+    const firstBrace = raw.indexOf("{");
+    const lastBrace = raw.lastIndexOf("}");
+    if (firstBrace !== -1) {
+      raw = raw.slice(firstBrace, lastBrace !== -1 ? lastBrace + 1 : undefined);
+    }
+
+    const tryRepair = (s: string): string => {
+      // Remove trailing commas before } or ]
+      let r = s.replace(/,(\s*[}\]])/g, "$1");
+      // Balance braces / brackets if truncated
+      const openC = (r.match(/\{/g) || []).length;
+      const closeC = (r.match(/\}/g) || []).length;
+      const openB = (r.match(/\[/g) || []).length;
+      const closeB = (r.match(/\]/g) || []).length;
+      if (closeB < openB) r += "]".repeat(openB - closeB);
+      if (closeC < openC) r += "}".repeat(openC - closeC);
+      return r;
+    };
+
+    let parsed: any;
     try {
-      parsed = JSON.parse(jsonMatch[1]!.trim());
-    } catch {
-      const braceMatch = raw.match(/\{[\s\S]*\}/);
-      if (braceMatch) {
-        parsed = JSON.parse(braceMatch[0]);
-      } else {
+      parsed = JSON.parse(raw);
+    } catch (e1) {
+      try {
+        parsed = JSON.parse(tryRepair(raw));
+      } catch (e2) {
+        console.error("city-power JSON parse failed. Raw start:", raw.slice(0, 200));
+        console.error("city-power JSON parse failed. Raw end:", raw.slice(-200));
         throw new Error("Could not parse AI response as JSON");
       }
     }
