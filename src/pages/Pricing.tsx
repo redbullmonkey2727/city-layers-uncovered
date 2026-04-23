@@ -67,7 +67,21 @@ const Pricing = () => {
       const { data, error: fnError } = await supabase.functions.invoke("create-checkout");
       if (fnError) throw fnError;
       if (data?.url) {
-        window.location.href = data.url;
+        // Try to break out of preview iframe; fall back to new tab, then same-tab.
+        const url = data.url as string;
+        setCheckoutUrl(url);
+        const newWin = window.open(url, "_blank", "noopener,noreferrer");
+        if (!newWin) {
+          try {
+            if (window.top && window.top !== window.self) {
+              window.top.location.href = url;
+            } else {
+              window.location.href = url;
+            }
+          } catch {
+            window.location.href = url;
+          }
+        }
       } else {
         throw new Error("No checkout URL returned");
       }
